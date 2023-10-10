@@ -247,7 +247,5 @@ if __name__ == '__main__':
         print("est %2s = %2d %2d" % (id_estacion, estacion.coordX, estacion.coordY))
         print("%3d %3d %3d %3d %3d" % (num_bicicletas_no_usadas, num_bicicletas_next, demanda, diferencia, excedente))
 
-    print("Bicis= %3d Demanda= %3d Disponibles= %3d Necesitan= %3d" %
+    print("Bicis= %3d Demanda= %3d Disponibles= %3d Necesitan= %3d" % 
           (acum_bicicletas, acum_demanda, acum_disponibles, acum_necesarias))
-
-#hola
