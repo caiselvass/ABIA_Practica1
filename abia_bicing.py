@@ -250,5 +250,3 @@ if __name__ == '__main__':
     print("Bicis= %3d Demanda= %3d Disponibles= %3d Necesitan= %3d" %
           (acum_bicicletas, acum_demanda, acum_disponibles, acum_necesarias))
 
-# BAIGES
-#kjkkjkj
