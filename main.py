@@ -6,32 +6,40 @@ import random
 
 # Declaración de funciones
 def generate_initial_state(lista_estaciones: list[Estacion], n_furgonetas: int) -> EstadoBicing:
-    """
-    Distribuim les furgonetes en les posicions inicials i retorna l'estat inicial.
-    """
     for est in lista_estaciones:
         est.bicicletas_sobrantes_next: int = est.num_bicicletas_next - est.demanda
 
-    lista_sobrantes_next = []
+    lista_sobrantes_next, lista_faltantes_next = [], []
     for est in lista_estaciones:
-        if est.bicicletas_sobrantes_next > 0 and est.num_bicicletas_no_usadas > 0:
+        if est.bicicletas_sobrantes_next < 0:
+            lista_faltantes_next.append(est)
+        elif est.bicicletas_sobrantes_next > 0 and est.num_bicicletas_no_usadas > 0:
             lista_sobrantes_next.append(est)
     
     n_estaciones_origen = len(lista_sobrantes_next)
+    n_estaciones_destino = len(lista_faltantes_next)
     
     lista_furgonetas = [Furgoneta() for _ in range(n_furgonetas)]
     est_con_furgoneta = set()
 
     for furgoneta in lista_furgonetas:
-        id_est = random.randint(0, n_estaciones_origen - 1)
-        while id_est in est_con_furgoneta:
-            id_est = random.randint(0, n_estaciones_origen - 1)
-        est_con_furgoneta.add(id_est)
+        # Asignamos una estación de origen a la furgoneta
+        id_est_o = random.randint(0, n_estaciones_origen - 1)
+        while id_est_o in est_con_furgoneta:
+            id_est_o = random.randint(0, n_estaciones_origen - 1)
+        est_con_furgoneta.add(id_est_o)
 
-        furgoneta.origenX = lista_sobrantes_next[id_est].coordX
-        furgoneta.origenY = lista_sobrantes_next[id_est].coordY
-        furgoneta.num_bicicletas += lista_sobrantes_next[id_est].num_bicicletas_no_usadas \
-            if lista_sobrantes_next[id_est].num_bicicletas_no_usadas <= 30 else 30
+        furgoneta.origenX = lista_sobrantes_next[id_est_o].coordX
+        furgoneta.origenY = lista_sobrantes_next[id_est_o].coordY
+        furgoneta.num_bicicletas += lista_sobrantes_next[id_est_o].num_bicicletas_no_usadas \
+            if lista_sobrantes_next[id_est_o].num_bicicletas_no_usadas <= 30 else 30
+
+        # Creamos las rutas de las furgonetas
+        id_est_d1 = random.randint(0, n_estaciones_destino - 1)
+        id_estd2 = random.randint(0, n_estaciones_destino - 1)
+
+        furgoneta.coord_destinos[0] = (lista_faltantes_next[id_est_d1].coordX, lista_faltantes_next[id_est_d1].coordY)
+        furgoneta.coord_destinos[1] = (lista_faltantes_next[id_estd2].coordX, lista_faltantes_next[id_estd2].coordY)
     
         print(furgoneta)
 

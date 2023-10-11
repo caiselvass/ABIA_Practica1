@@ -5,7 +5,7 @@ class Furgoneta(object):
         self.origenY = y
         self.km = 0
         self.num_bicicletas = num_bicicletas
-        self.coord_finales = [None, None]
+        self.coord_destinos = [(self.origenX, self.origenY), (self.origenX, self.origenY)]
 
     def __eq__(self, other: 'Furgoneta'):
         return isinstance(other, Furgoneta) and \
@@ -14,4 +14,4 @@ class Furgoneta(object):
                     self.num_bicicletas == other.num_bicicletas
     
     def __repr__(self) -> str:
-        return f"Furgoneta(coordX={self.origenX}, coordY={self.origenY}, num_bicicletas={self.num_bicicletas}, km={self.km}, coord_finales={self.coord_finales})"
+        return f"Furgoneta(coordX={self.origenX}, coordY={self.origenY}, num_bicicletas={self.num_bicicletas}, km={self.km}, coord_finales={self.coord_destinos})"
