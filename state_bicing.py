@@ -5,7 +5,6 @@ class EstadoBicing(object):
     def __init__(self, lista_estaciones: list[Estacion], lista_furgonetas: list[Furgoneta]):
         self.lista_estaciones = lista_estaciones
         self.lista_furgonetas = lista_furgonetas
-        self.beneficio = 0
         
     def __eq__(self, other):
         return isinstance(other, EstadoBicing) and self.lista_estaciones == other.lista_estaciones and self.lista_furgonetas == other.lista_furgonetas
@@ -25,11 +24,29 @@ class EstadoBicing(object):
         
         f"{self.lista_estaciones.__repr__()}\n\n---------- FURGONETAS ----------\n{str_furgonetas}"
     
-    def calcular_km(self) -> int:
-        km_totales = 0
+    def calcular_coste_rutas(self) -> int:
+        coste_total = 0
         for furgoneta in self.lista_furgonetas:
-            km_totales += furgoneta.km
-        return km_totales
+            coste_total += furgoneta.calcular_coste_ruta()
+        
+        return coste_total
+
+    def calcular_beneficios_estaciones(self) -> int:
+        beneficios_estaciones = 0
+        for furgoneta in self.lista_furgonetas:
+            beneficios_estaciones += furgoneta.beneficio_descargas
+        
+        return beneficios_estaciones
+    
+    def calcular_perdidas_estaciones(self) -> int:
+        demanda_total = 0
+        for estacion in self.lista_estaciones:
+            demanda_total -= estacion.demanda
+            
+        return demanda_total
+    
+    def calcular_balance(self):
+        return self.calcular_perdidas_estaciones() + self.calcular_beneficios_estaciones() - self.calcular_coste_rutas()
 
     def heuristic(self):
         # GANANCIAS

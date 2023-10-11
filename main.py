@@ -31,16 +31,26 @@ def generate_initial_state(lista_estaciones: list[Estacion], n_furgonetas: int) 
 
         furgoneta.origenX = lista_sobrantes_next[id_est_o].coordX
         furgoneta.origenY = lista_sobrantes_next[id_est_o].coordY
-        furgoneta.num_bicicletas += lista_sobrantes_next[id_est_o].num_bicicletas_no_usadas \
+        furgoneta.num_bicicletas_cargadas = lista_sobrantes_next[id_est_o].num_bicicletas_no_usadas \
             if lista_sobrantes_next[id_est_o].num_bicicletas_no_usadas <= 30 else 30
 
         # Creamos las rutas de las furgonetas
         id_est_d1 = random.randint(0, n_estaciones_destino - 1)
-        id_estd2 = random.randint(0, n_estaciones_destino - 1)
+        id_est_d2 = random.randint(0, n_estaciones_destino - 1)
 
-        furgoneta.coord_destinos[0] = (lista_faltantes_next[id_est_d1].coordX, lista_faltantes_next[id_est_d1].coordY)
-        furgoneta.coord_destinos[1] = (lista_faltantes_next[id_estd2].coordX, lista_faltantes_next[id_estd2].coordY)
-    
+        destino1: tuple[int, int] = (lista_faltantes_next[id_est_d1].coordX, lista_faltantes_next[id_est_d1].coordY)
+        destino2: tuple[int, int] = (lista_faltantes_next[id_est_d2].coordX, lista_faltantes_next[id_est_d2].coordY)
+        furgoneta.set_coord_destinos(destino1, destino2)
+
+        # Descargamos las bicicletas en la 1a estación de destino
+        furgoneta.num_bicicletas_descargadas_destino1 = min(furgoneta.num_bicicletas_cargadas, \
+                                                            abs(lista_faltantes_next[id_est_d1].bicicletas_sobrantes_next))
+        
+
+        furgoneta.beneficio_descargas += furgoneta.num_bicicletas_descargadas_destino1 * 2 # El euro que nos dan y el que ya no nos quitan
+        furgoneta.beneficio_descargas += min(furgoneta.num_bicicletas_cargadas - furgoneta.num_bicicletas_descargadas_destino1, \
+                                             lista_faltantes_next[id_est_d2].demanda) * 2 # El euro que nos dan y el que ya no nos quitan
+        
         print(furgoneta)
 
     return EstadoBicing(lista_estaciones, lista_furgonetas)
@@ -86,4 +96,5 @@ if __name__ == '__main__':
     print("Bicis= %3d Demanda= %3d Disponibles= %3d Necesitan= %3d" % 
           (acum_bicicletas, acum_demanda, acum_disponibles, acum_necesarias))
     
-    generate_initial_state(estaciones.lista_estaciones, parameters.n_furgonetas)
+    test_state: EstadoBicing = generate_initial_state(estaciones.lista_estaciones, parameters.n_furgonetas)
+    print(f"\nRUTAS: {test_state.calcular_coste_rutas()} \nBENEFICIOS: {test_state.calcular_beneficios_estaciones()} \nPERDIDAS: {test_state.calcular_perdidas_estaciones()} \nBALANCE: {test_state.calcular_balance()}\n")
