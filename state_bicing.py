@@ -31,10 +31,8 @@ class EstadoBicing(object):
             km_totales += furgoneta.km
         return km_totales
 
-    
-
     def heuristic(self):
-         # GANANCIAS
+        # GANANCIAS
             #Nos paga un euro por cada bicicleta que transportemos que haga que el número de bicicletas de una estación se acerque a la demanda. 
             #Es decir, nos paga por las bicicletas adicionales que haya en una estación respecto a la previsión de cuantas bicicletas habrá en la estación en la
             #hora siguiente, siempre que no superen la demanda prevista."
