@@ -20,11 +20,6 @@ class Estacion(object):
         self.coordY: int = y * 100
         self.num_bicicletas_no_usadas: int = 0
         self.num_bicicletas_next: int = 0
-        self.demanda: int = 0
-        self.bicicletas_faltantes: int = self.demanda - self.num_bicicletas_next
-
-    def __repr__(self):
-        return f"(CoordX: {self.coordX}, CoordY: {self.coordY})"
 
 
 class Estaciones(object):
@@ -56,17 +51,6 @@ class Estaciones(object):
         self.__genera_estado_movimientos()
         self.__genera_proxima_demanda()
 
-    def __repr__(self):
-        str_estaciones = "---------- ESTACIONES ----------\n"
-        list_str_estaciones = []
-        count = 1
-        for est in self.lista_estaciones:
-            list_str_estaciones.append(f"Estacion {count}: {est.__repr__()}")
-            count += 1
-
-        str_estaciones += str.join(", ", list_str_estaciones)
-        return str_estaciones
-
     def __genera_estado_actual(self):
         """
         Assigna bicicletas a las estaciones de forma aleatoria.
@@ -91,7 +75,7 @@ class Estaciones(object):
         for est in self.lista_estaciones:
             est.num_bicicletas_next = 0
 
-        for _ in range(num_movimientos):
+        for id_est in range(num_movimientos):
             var3 = self.rng.randint(0, len(self.lista_estaciones) - 1)
             var2 = self.rng.randint(0, len(self.lista_estaciones) - 1)
             if self.lista_estaciones[var3].num_bicicletas_no_usadas > 0:
