@@ -24,8 +24,8 @@ class Furgoneta(object):
         nb_trayecto1 = self.num_bicicletas_cargadas
         nb_trayecto2 = self.num_bicicletas_cargadas - self.num_bicicletas_descargadas_destino1
         
-        km_trayecto1 = distancia_manhattan((self.origenX, self.origenY), self.coord_destinos[0])
-        km_trayecto2 = distancia_manhattan(self.coord_destinos[0], self.coord_destinos[1])
+        km_trayecto1 = distancia_manhattan((self.origenX, self.origenY), self.coord_destinos[0]) / 1000
+        km_trayecto2 = distancia_manhattan(self.coord_destinos[0], self.coord_destinos[1]) / 1000
         
         coste_trayecto1 = ((nb_trayecto1 + 9) // 10) * km_trayecto1
         coste_trayecto2 = ((nb_trayecto2 + 9) // 10) * km_trayecto2
