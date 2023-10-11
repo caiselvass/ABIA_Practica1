@@ -31,9 +31,7 @@ def generate_initial_state(lista_estaciones: list[Estacion], n_furgonetas: int) 
 
         furgoneta.origenX = lista_sobrantes_next[id_est_o].coordX
         furgoneta.origenY = lista_sobrantes_next[id_est_o].coordY
-        furgoneta.num_bicicletas_cargadas = lista_sobrantes_next[id_est_o].num_bicicletas_no_usadas \
-            if lista_sobrantes_next[id_est_o].num_bicicletas_no_usadas <= 30 else 30
-
+       
         # Creamos las rutas de las furgonetas
         id_est_d1 = random.randint(0, n_estaciones_destino - 1)
         id_est_d2 = random.randint(0, n_estaciones_destino - 1)
@@ -41,6 +39,12 @@ def generate_initial_state(lista_estaciones: list[Estacion], n_furgonetas: int) 
         destino1: tuple[int, int] = (lista_faltantes_next[id_est_d1].coordX, lista_faltantes_next[id_est_d1].coordY)
         destino2: tuple[int, int] = (lista_faltantes_next[id_est_d2].coordX, lista_faltantes_next[id_est_d2].coordY)
         furgoneta.set_coord_destinos(destino1, destino2)
+        
+        
+        
+        # Cargamos bicicletas
+        furgoneta.num_bicicletas_cargadas = min(30, lista_sobrantes_next[id_est_o].num_bicicletas_no_usadas, \
+                                                abs(lista_faltantes_next[id_est_d1].bicicletas_sobrantes_next) + abs(lista_faltantes_next[id_est_d2].bicicletas_sobrantes_next))
 
         # Descargamos las bicicletas en la 1a estación de destino
         furgoneta.num_bicicletas_descargadas_destino1 = min(furgoneta.num_bicicletas_cargadas, \
