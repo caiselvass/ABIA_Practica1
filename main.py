@@ -1,7 +1,7 @@
 from estaciones_bicing import Estaciones, Estacion
 from state_bicing import EstadoBicing
 from furgoneta_bicing import Furgoneta
-from parameters_bicing import Parameters
+from parameters_bicing import Parameters, distancia_manhattan
 import random
 
 # Declaración de funciones
@@ -9,45 +9,30 @@ def generate_initial_state(lista_estaciones: list[Estacion], n_furgonetas: int) 
     """
     Distribuim les furgonetes en les posicions inicials i retorna l'estat inicial.
     """
-    lista_sobrantes_next, lista_distancias_centro = [], []
-    for id_est in range(len(lista_estaciones)):
-        est = lista_estaciones[id_est]
-        
+    for est in lista_estaciones:
         est.bicicletas_sobrantes_next: int = est.num_bicicletas_next - est.demanda
-        lista_sobrantes_next.append((est.bicicletas_sobrantes_next, id_est))
 
-        est.distancia_centro: int = distancia_manhattan((est.coordX, est.coordY), (5000, 5000))
-        lista_distancias_centro.append((est.distancia_centro, id_est))
+    lista_sobrantes_next = []
+    for est in lista_estaciones:
+        if est.bicicletas_sobrantes_next > 0 and est.num_bicicletas_no_usadas > 0:
+            lista_sobrantes_next.append(est)
     
-    lista_sobrantes_next.sort(reverse=True)
-    lista_distancias_centro.sort()
+    n_estaciones_origen = len(lista_sobrantes_next)
     
-    mitad_estaciones = len(lista_estaciones)//2
-
     lista_furgonetas = [Furgoneta() for _ in range(n_furgonetas)]
     est_con_furgoneta = set()
 
     for furgoneta in lista_furgonetas:
-        seleccionar_lista: str = random.choice(["sobrantes", "distancias"])
-        
-        if seleccionar_lista == "sobrantes":
-            est_id = random.randint(0, mitad_estaciones)
-            while lista_estaciones[lista_sobrantes_next[est_id][1]] in est_con_furgoneta:
-                est_id = random.randint(0, mitad_estaciones)
-            est_con_furgoneta.add(lista_estaciones[lista_sobrantes_next[est_id][1]])
+        id_est = random.randint(0, n_estaciones_origen - 1)
+        while id_est in est_con_furgoneta:
+            id_est = random.randint(0, n_estaciones_origen - 1)
+        est_con_furgoneta.add(id_est)
 
-            furgoneta.coordX = lista_estaciones[lista_sobrantes_next[est_id][1]].coordX
-            furgoneta.coordY = lista_estaciones[lista_sobrantes_next[est_id][1]].coordY
-
-        else: # seleccionar_lista == "distancias"
-            est_id = random.randint(0, mitad_estaciones)
-            while lista_estaciones[lista_distancias_centro[est_id][1]] in est_con_furgoneta:
-                est_id = random.randint(0, mitad_estaciones)
-            est_con_furgoneta.add(lista_estaciones[lista_distancias_centro[est_id][1]])
-
-            furgoneta.coordX = lista_estaciones[lista_distancias_centro[est_id][1]].coordX
-            furgoneta.coordY = lista_estaciones[lista_distancias_centro[est_id][1]].coordY
-
+        furgoneta.origenX = lista_sobrantes_next[id_est].coordX
+        furgoneta.origenY = lista_sobrantes_next[id_est].coordY
+        furgoneta.num_bicicletas += lista_sobrantes_next[id_est].num_bicicletas_no_usadas \
+            if lista_sobrantes_next[id_est].num_bicicletas_no_usadas <= 30 else 30
+    
         print(furgoneta)
 
     return EstadoBicing(lista_estaciones, lista_furgonetas)
