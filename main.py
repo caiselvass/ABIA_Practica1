@@ -97,4 +97,4 @@ if __name__ == '__main__':
           (acum_bicicletas, acum_demanda, acum_disponibles, acum_necesarias))
     
     test_state: EstadoBicing = generate_initial_state(estaciones.lista_estaciones, parameters.n_furgonetas)
-    print(f"\nRUTAS: {test_state.calcular_coste_rutas()} \nBENEFICIOS: {test_state.calcular_beneficios_estaciones()} \nPERDIDAS: {test_state.calcular_perdidas_estaciones()} \nBALANCE: {test_state.calcular_balance()}\n")
+    print(f"\nRUTAS: {test_state.calcular_balance_rutas()} \nBENEFICIOS: {test_state.calcular_beneficios_estaciones()} \nPERDIDAS: {test_state.calcular_perdidas_estaciones()} \nBALANCE: {test_state.calcular_balance()}\n")

@@ -24,10 +24,10 @@ class EstadoBicing(object):
         
         f"{self.lista_estaciones.__repr__()}\n\n---------- FURGONETAS ----------\n{str_furgonetas}"
     
-    def calcular_coste_rutas(self) -> int:
+    def calcular_balance_rutas(self) -> int:
         coste_total = 0
         for furgoneta in self.lista_furgonetas:
-            coste_total += furgoneta.calcular_coste_ruta()
+            coste_total -= furgoneta.calcular_coste_ruta()
         
         return coste_total
 
@@ -46,7 +46,7 @@ class EstadoBicing(object):
         return demanda_total
     
     def calcular_balance(self):
-        return self.calcular_perdidas_estaciones() + self.calcular_beneficios_estaciones() - self.calcular_coste_rutas()
+        return self.calcular_perdidas_estaciones() + self.calcular_beneficios_estaciones() - self.calcular_balance_rutas()
 
     def heuristic(self):
         # GANANCIAS
