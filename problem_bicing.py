@@ -10,17 +10,14 @@ class ProblemaBicing(Problem):
     def actions(self, state: EstadoBicing):
         pass
 
-    def result(self, state: EstadoBicing, action):
+    def result(self, state: EstadoBicing, action) -> EstadoBicing:
         pass
 
-    def path_cost(self, c, state1, action, state2):
+    def path_cost(self, c, state1, action, state2) -> int:
         pass
     
-    def h(self, node):
-        return node.state.heuristic()
-    
-    def value(self, state: EstadoBicing):
+    def value(self, state: EstadoBicing) -> float:
         return -state.heuristic()
     
-    def goal_test(self, state: EstadoBicing):
+    def goal_test(self, state: EstadoBicing) -> bool:
         return False

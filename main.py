@@ -1,3 +1,32 @@
+from estaciones_bicing import Estaciones, Estacion
+from state_bicing import EstadoBicing
+from furgoneta_bicing import Furgoneta
+from parameters_bicing import Parameters
+import random
+
+# Declaración de funciones
+def generate_initial_state(lista_estaciones: list[Estacion], n_furgonetas: int) -> EstadoBicing:
+    """
+    Distribueixe les furgonetes en les posicions inicials i retorna l'estat inicial.
+    """
+    lista_sobrantes_next = []
+    for est in lista_estaciones:
+        est.bicicletas_sobrantes_next: int = est.num_bicicletas_next - est.demanda
+        lista_sobrantes_next.append((est.bicicletas_sobrentes_next, est))
+    
+    lista_sobrantes_next.sort(reverse=True)
+    lista_sobrantes_next = lista_sobrantes_next[:len(lista_sobrantes_next)//2]
+    
+    lista_furgonetas = []
+    for _ in range(n_furgonetas):
+        est_id = random.randint(0, len(lista_sobrantes_next) - 1) # Falta comprovar que no es posin dues furgonetes en la mateixa estació
+        cordX = lista_sobrantes_next[est_id][1].coordX
+        cordY = lista_sobrantes_next[est_id][1].coordY
+        lista_furgonetas.append(Furgoneta(cordX, cordY))
+
+    return EstadoBicing(lista_estaciones, lista_furgonetas)
+
+
 if __name__ == '__main__':
     """
     Prueba de funcionamiento:
@@ -7,7 +36,9 @@ if __name__ == '__main__':
     * Datos globales de bicicletas demandadas, disponibles para mover
       y bicicletas que es necesario mover
     """
-    estaciones = Estaciones(25, 1250, 42)
+    parameters = Parameters(n_estaciones=25, n_bicicletas=1250, n_furgonetas=5, seed=42)
+    
+    estaciones = Estaciones(parameters.n_estaciones, parameters.n_bicicletas, parameters.seed)
     acum_bicicletas = 0
     acum_demanda = 0
     acum_disponibles = 0
@@ -36,3 +67,5 @@ if __name__ == '__main__':
 
     print("Bicis= %3d Demanda= %3d Disponibles= %3d Necesitan= %3d" % 
           (acum_bicicletas, acum_demanda, acum_disponibles, acum_necesarias))
+    
+    generate_initial_state(estaciones.lista_estaciones, parameters.n_furgonetas)

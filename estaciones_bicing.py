@@ -65,7 +65,7 @@ class Estaciones(object):
             self.lista_estaciones[id_est].num_bicicletas_no_usadas = \
                 self.lista_estaciones[id_est].num_bicicletas_no_usadas + asignadas
             i = i - asignadas
-
+    
     def __genera_estado_movimientos(self):
         """
         Genera movimientos de bicicletas entre estaciones de forma aleatoria.
