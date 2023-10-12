@@ -17,7 +17,7 @@ def generate_initial_state(lista_estaciones: list[Estacion], n_furgonetas: int) 
     n_estaciones_origen = len(lista_est_excedente)
     n_estaciones_destino = len(lista_est_faltante)
     
-    lista_furgonetas = [Furgoneta() for _ in range(n_furgonetas)]
+    lista_furgonetas = [Furgoneta(id=i) for i in range(n_furgonetas)]
     
     est_con_furgoneta = set()
     for furgoneta in lista_furgonetas:
@@ -41,7 +41,7 @@ def generate_initial_state(lista_estaciones: list[Estacion], n_furgonetas: int) 
         coord_destino2: tuple[int, int] = (estacion_destino2.coordX, estacion_destino2.coordY)
         furgoneta.set_coord_destinos(coord_destino1, coord_destino2)
         
-        # Cargamos y descargamos las bicicletas en las estaciones correspondientes y actualizamos el balance de esas estaciones
+        # Cargamos y descargamos las bicicletas en las estaciones correspondientes y actualizamos ciertos datos de esas estaciones
         num_bicicletas_carga_inicial = min(30, estacion_origen.diferencia, estacion_origen.num_bicicletas_no_usadas, abs(estacion_destino1.diferencia) + abs(estacion_destino2.diferencia))
         
         furgoneta.realizar_ruta(estacion_carga=estacion_origen, estacion_descarga1=estacion_destino1, estacion_descarga2=estacion_destino2, num_bicicletas_carga=num_bicicletas_carga_inicial)

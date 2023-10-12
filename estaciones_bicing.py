@@ -21,8 +21,6 @@ class Estacion(object):
         self.num_bicicletas_no_usadas: int = 0
         self.num_bicicletas_next: int = 0
 
-    def __repr__(self) -> str:
-        return f"Estacion(coordX={self.coordX}, coordY={self.coordY}, num_bicicletas_no_usadas={self.num_bicicletas_no_usadas}, num_bicicletas_next={self.num_bicicletas_next}, demanda={self.demanda}, diferencia_inicial={self.num_bicicletas_next - self.demanda}, diferencia_final={self.diferencia})"
 
 class Estaciones(object):
     """

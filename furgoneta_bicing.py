@@ -3,7 +3,8 @@ from functions_bicing import distancia_manhattan
 from estaciones_bicing import Estacion
 
 class Furgoneta(object):
-    def __init__(self, x: Union[int, None] = None, y: Union[int, None] = None):
+    def __init__(self, x: Union[int, None] = None, y: Union[int, None] = None, id = None):
+        self.id = id
         self.origenX = x
         self.origenY = y
         self.num_bicicletas_cargadas = 0
@@ -30,11 +31,9 @@ class Furgoneta(object):
         self.beneficio_descargas = self.num_bicicletas_descargadas_destino1 + self.num_bicicletas_descargadas_destino2 - self.num_bicicletas_cargadas   
 
     def __cargar_bicicletas(self, estacion_carga: Estacion, num_bicicletas_carga: int):
-        print(f"{estacion_carga} carreguem {num_bicicletas_carga} bicis")
         self.num_bicicletas_cargadas = num_bicicletas_carga
         estacion_carga.num_bicicletas_no_usadas -= num_bicicletas_carga
         estacion_carga.diferencia -= num_bicicletas_carga
-        print(f"{estacion_carga}\n")
 
     def __descargar_bicicletas(self, estacion_descarga1: Estacion, estacion_descarga2: Estacion):
         self.num_bicicletas_descargadas_destino1 = min(self.num_bicicletas_cargadas, abs(estacion_descarga1.diferencia))
