@@ -17,8 +17,8 @@ class CambiarEstacionCarga(BicingOperator):
 class CambiarEstacionDescarga(BicingOperator):
     def __init__(self, furgoneta: Furgoneta, estacion: Estacion, n_estacion: int):
         assert n_estacion in {0,1}, "n_estacion debe ser 0 o 1"
-        self.furgoneta = furgoneta
         self.estacion = estacion
+        self.furgoneta = furgoneta
         self.n_estacion = n_estacion
 
     def __repr__(self) -> str:

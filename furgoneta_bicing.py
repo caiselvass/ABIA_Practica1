@@ -3,37 +3,43 @@ from functions_bicing import distancia_manhattan
 from estaciones_bicing import Estacion
 
 class Furgoneta(object):
-    def __init__(self, x: Union[int, None] = None, y: Union[int, None] = None, id = None):
+    def __init__(self, estacion_origen: Union[None, Estacion] = None, id = None):
         self.id = id
-        self.origenX = x
-        self.origenY = y
+        self.estacion_origen = estacion_origen
+        self.estaciones_destino: list[Estacion] = []
+        self.origenX = None
+        self.origenY = None
         self.num_bicicletas_cargadas = 0
         self.coord_destinos: list[tuple] = [(self.origenX, self.origenY), (self.origenX, self.origenY)]
         self.num_bicicletas_descargadas_destino1: int = 0
         self.num_bicicletas_descargadas_destino2: int = 0
 
-    def set_coord_destinos(self, destino1: tuple[int, int], destino2: tuple[int, int]):
-        if distancia_manhattan((self.origenX, self.origenY), destino1) < distancia_manhattan((self.origenX, self.origenY), destino2):
-            self.coord_destinos = [destino1, destino2]
+    def set_estaciones_destinos(self, destino1: Estacion, destino2: Estacion):
+        if distancia_manhattan((self.origenX, self.origenY), (destino1.coordX, destino1.coordY)) \
+            < distancia_manhattan((self.origenX, self.origenY), (destino2.coordX, destino2.coordY)):
+            self.coord_destinos = [(destino1.coordX, destino1.coordY), (destino2.coordX, destino2.coordY)]
+            self.estaciones_destino = [destino1, destino2]
         else:
-            self.coord_destinos = [destino2, destino1]
+            self.coord_destinos = [(destino2.coordX, destino2.coordY), (destino1.coordX, destino1.coordY)]
+            self.estaciones_destino = [destino2, destino1]
     
-    def set_coord_origen(self, new_x: int, new_y: int):
-        self.origenX = new_x
-        self.origenY = new_y
+    def set_estacion_origen(self, estacion_origen: Estacion):
+        self.estacion_origen = estacion_origen
+        self.origenX = estacion_origen.coordX
+        self.origenY = estacion_origen.coordY
 
     #def set_num_bicicletas_cargadas(self, num_bicicletas: int):
         #self.num_bicicletas_cargadas = num_bicicletas
 
-    def realizar_ruta(self, estacion_carga: Estacion, estacion_descarga1: Estacion, estacion_descarga2: Estacion, num_bicicletas_carga: int):
-        self.__cargar_bicicletas(estacion_carga, num_bicicletas_carga)
+    def realizar_ruta(self, estacion_descarga1: Estacion, estacion_descarga2: Estacion, num_bicicletas_carga: int):
+        self.__cargar_bicicletas(num_bicicletas_carga)
         self.__descargar_bicicletas(estacion_descarga1, estacion_descarga2)
         self.beneficio_descargas = self.num_bicicletas_descargadas_destino1 + self.num_bicicletas_descargadas_destino2 - self.num_bicicletas_cargadas   
-
-    def __cargar_bicicletas(self, estacion_carga: Estacion, num_bicicletas_carga: int):
+    
+    def __cargar_bicicletas(self, num_bicicletas_carga: int):
         self.num_bicicletas_cargadas = num_bicicletas_carga
-        estacion_carga.num_bicicletas_no_usadas -= num_bicicletas_carga
-        estacion_carga.diferencia -= num_bicicletas_carga
+        self.estacion_origen.num_bicicletas_no_usadas -= num_bicicletas_carga
+        self.estacion_origen.diferencia -= num_bicicletas_carga
 
     def __descargar_bicicletas(self, estacion_descarga1: Estacion, estacion_descarga2: Estacion):
         self.num_bicicletas_descargadas_destino1 = min(self.num_bicicletas_cargadas, abs(estacion_descarga1.diferencia))
@@ -64,4 +70,5 @@ class Furgoneta(object):
 
     def __repr__(self) -> str:
         return f"Furgoneta(coordX={self.origenX}, coordY={self.origenY}, num_bicicletas_cargadas={self.num_bicicletas_cargadas}, " \
-             + f"num_bicicletas_descargadas_destino1={self.num_bicicletas_descargadas_destino1}, coste_ruta={self.calcular_coste_ruta()}, coord_destinos={self.coord_destinos}, beneficio_descargas={self.beneficio_descargas})"
+             + f"num_bicicletas_descargadas_destino1={self.num_bicicletas_descargadas_destino1}, coste_ruta={self.calcular_coste_ruta()}, " \
+                + f"coord_destinos={self.coord_destinos}, beneficio_descargas={self.beneficio_descargas})"

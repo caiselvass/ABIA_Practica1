@@ -4,6 +4,7 @@ from furgoneta_bicing import Furgoneta
 from parameters_bicing import Parameters
 import random
 
+
 # Declaración de funciones
 def generate_initial_state(lista_estaciones: list[Estacion], n_furgonetas: int) -> EstadoBicing:
     # Creamos una lista con las estaciones con diferencia positiva y otra con las estaciones con diferencia negativa
@@ -29,7 +30,7 @@ def generate_initial_state(lista_estaciones: list[Estacion], n_furgonetas: int) 
         estacion_origen = lista_est_excedente[id_est_o]
 
         # Asignamos las coorenadas de origen a la furgoneta
-        furgoneta.set_coord_origen(estacion_origen.coordX, estacion_origen.coordY)
+        furgoneta.set_estacion_origen(estacion_origen)
     
         # Creamos las rutas de las furgonetas
         id_est_d1 = random.randint(0, n_estaciones_destino - 1)
@@ -37,14 +38,12 @@ def generate_initial_state(lista_estaciones: list[Estacion], n_furgonetas: int) 
         estacion_destino1 = lista_est_faltante[id_est_d1]
         estacion_destino2 = lista_est_faltante[id_est_d2]
 
-        coord_destino1: tuple[int, int] = (estacion_destino1.coordX, estacion_destino1.coordY)
-        coord_destino2: tuple[int, int] = (estacion_destino2.coordX, estacion_destino2.coordY)
-        furgoneta.set_coord_destinos(coord_destino1, coord_destino2)
+        furgoneta.set_estaciones_destinos(estacion_destino1, estacion_destino2)
         
         # Cargamos y descargamos las bicicletas en las estaciones correspondientes y actualizamos ciertos datos de esas estaciones
         num_bicicletas_carga_inicial = min(30, estacion_origen.diferencia, estacion_origen.num_bicicletas_no_usadas, abs(estacion_destino1.diferencia) + abs(estacion_destino2.diferencia))
         
-        furgoneta.realizar_ruta(estacion_carga=estacion_origen, estacion_descarga1=estacion_destino1, estacion_descarga2=estacion_destino2, num_bicicletas_carga=num_bicicletas_carga_inicial)
+        furgoneta.realizar_ruta(estacion_descarga1=estacion_destino1, estacion_descarga2=estacion_destino2, num_bicicletas_carga=num_bicicletas_carga_inicial)
             
         print(furgoneta)
 
