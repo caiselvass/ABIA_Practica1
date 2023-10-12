@@ -1,5 +1,6 @@
-from estaciones_bicing import Estaciones, Estacion
+from estaciones_bicing import Estacion
 from furgoneta_bicing import Furgoneta
+from operators_bicing import BicingOperator
 
 class EstadoBicing(object):
     def __init__(self, lista_estaciones: list[Estacion], lista_furgonetas: list[Furgoneta]):
@@ -14,15 +15,6 @@ class EstadoBicing(object):
     
     def __hash__(self):
         return hash((self.lista_estaciones, self.lista_furgonetas))
-    
-    def __repr__(self):
-        str_furgonetas = ""
-        count = 1
-        for furgoneta in self.lista_furgonetas:
-            str_furgonetas += f"Furgoneta {count}: {furgoneta.__repr__()}\n"
-            count += 1
-        
-        f"{self.lista_estaciones.__repr__()}\n\n---------- FURGONETAS ----------\n{str_furgonetas}"
     
     def calcular_balance_rutas(self) -> int:
         coste_total = 0
@@ -54,7 +46,7 @@ class EstadoBicing(object):
             #Es decir, nos paga por las bicicletas adicionales que haya en una estación respecto a la previsión de cuantas bicicletas habrá en la estación en la
             #hora siguiente, siempre que no superen la demanda prevista."
         # PERDIDAS
-            #nos cobrará un euro por cada bicicleta que transportemos que aleje a una estación de su previsión. 
+            #nos cobrará un euro por cada bicicleta que transportemos que aleje a una estación de su previsión.
             #Es decir, nos descontarán por las bicicletas que movamos que hagan que una estación quede por debajo de la demanda prevista.
         # COSTE POR KM
             # nb es el número de bicicletas que transportamos en una furgoneta, el coste en euros por kilómetro recorrido es ((nb + 9) div 10), donde div es la división entera.
@@ -63,5 +55,5 @@ class EstadoBicing(object):
     def generate_actions(self):
         pass
 
-    def apply_action(self, action):
+    def apply_action(self, action: BicingOperator):
         pass

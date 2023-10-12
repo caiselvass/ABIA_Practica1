@@ -1,19 +1,16 @@
 from estaciones_bicing import Estaciones, Estacion
 from state_bicing import EstadoBicing
 from furgoneta_bicing import Furgoneta
-from parameters_bicing import Parameters, distancia_manhattan
+from parameters_bicing import Parameters
 import random
 
 # Declaración de funciones
 def generate_initial_state(lista_estaciones: list[Estacion], n_furgonetas: int) -> EstadoBicing:
-    for est in lista_estaciones:
-        est.bicicletas_sobrantes_next: int = est.num_bicicletas_next - est.demanda
-
     lista_sobrantes_next, lista_faltantes_next = [], []
     for est in lista_estaciones:
-        if est.bicicletas_sobrantes_next < 0:
+        if est.diferencia < 0:
             lista_faltantes_next.append(est)
-        elif est.bicicletas_sobrantes_next > 0 and est.num_bicicletas_no_usadas > 0:
+        elif est.diferencia > 0 and est.num_bicicletas_no_usadas > 0:
             lista_sobrantes_next.append(est)
     
     n_estaciones_origen = len(lista_sobrantes_next)
@@ -29,8 +26,8 @@ def generate_initial_state(lista_estaciones: list[Estacion], n_furgonetas: int) 
             id_est_o = random.randint(0, n_estaciones_origen - 1)
         est_con_furgoneta.add(id_est_o)
 
-        furgoneta.origenX = lista_sobrantes_next[id_est_o].coordX
-        furgoneta.origenY = lista_sobrantes_next[id_est_o].coordY
+        # Asignamos las coorenadas de origen a la furgoneta
+        furgoneta.set_coord_origen(lista_sobrantes_next[id_est_o].coordX, lista_sobrantes_next[id_est_o].coordY)
        
         # Creamos las rutas de las furgonetas
         id_est_d1 = random.randint(0, n_estaciones_destino - 1)
@@ -40,25 +37,20 @@ def generate_initial_state(lista_estaciones: list[Estacion], n_furgonetas: int) 
         destino2: tuple[int, int] = (lista_faltantes_next[id_est_d2].coordX, lista_faltantes_next[id_est_d2].coordY)
         furgoneta.set_coord_destinos(destino1, destino2)
         
-        
-        
         # Cargamos bicicletas
-        furgoneta.num_bicicletas_cargadas = min(30, lista_sobrantes_next[id_est_o].num_bicicletas_no_usadas, \
-                                                abs(lista_faltantes_next[id_est_d1].bicicletas_sobrantes_next) + abs(lista_faltantes_next[id_est_d2].bicicletas_sobrantes_next))
+        furgoneta.cargar_bicicletas(estacion_carga=lista_sobrantes_next[id_est_o], estaciones_destino=[lista_faltantes_next[id_est_d1], lista_faltantes_next[id_est_d2]])
 
         # Descargamos las bicicletas en la 1a estación de destino
-        furgoneta.num_bicicletas_descargadas_destino1 = min(furgoneta.num_bicicletas_cargadas, \
-                                                            abs(lista_faltantes_next[id_est_d1].bicicletas_sobrantes_next))
-        
-
-        furgoneta.beneficio_descargas += furgoneta.num_bicicletas_descargadas_destino1 * 2 # El euro que nos dan y el que ya no nos quitan
-        furgoneta.beneficio_descargas += min(furgoneta.num_bicicletas_cargadas - furgoneta.num_bicicletas_descargadas_destino1, \
-                                             lista_faltantes_next[id_est_d2].demanda) * 2 # El euro que nos dan y el que ya no nos quitan
+        furgoneta.descargar_bicicletas(estacion_descarga1=lista_faltantes_next[id_est_d1])
+    
+        # Actualizamos los beneficios
+        furgoneta.actualizar_beneficio(estacion_descarga2=lista_faltantes_next[id_est_d2])
         
         print(furgoneta)
 
     return EstadoBicing(lista_estaciones, lista_furgonetas)
 
+# Programa principal
 if __name__ == '__main__':
     """
     Prueba de funcionamiento:
@@ -77,6 +69,7 @@ if __name__ == '__main__':
     acum_necesarias = 0
 
     print("Sta Cur Dem Dif Exc")
+
     for id_estacion, estacion in enumerate(estaciones.lista_estaciones):
         num_bicicletas_no_usadas = estacion.num_bicicletas_no_usadas
         num_bicicletas_next = estacion.num_bicicletas_next
@@ -84,6 +77,7 @@ if __name__ == '__main__':
         acum_bicicletas = acum_bicicletas + num_bicicletas_next
         acum_demanda = acum_demanda + demanda
         diferencia = num_bicicletas_next - demanda
+        estacion.diferencia = diferencia
         if diferencia > 0:
             if diferencia > num_bicicletas_no_usadas:
                 excedente = num_bicicletas_no_usadas
@@ -101,4 +95,4 @@ if __name__ == '__main__':
           (acum_bicicletas, acum_demanda, acum_disponibles, acum_necesarias))
     
     test_state: EstadoBicing = generate_initial_state(estaciones.lista_estaciones, parameters.n_furgonetas)
-    print(f"\nRUTAS: {test_state.calcular_balance_rutas()} \nBENEFICIOS: {test_state.calcular_beneficios_estaciones()} \nPERDIDAS: {test_state.calcular_perdidas_estaciones()} \nBALANCE: {test_state.calcular_balance()}\n")
+    print(f"\n{'*'*18}\n\nRUTAS: {test_state.calcular_balance_rutas()} \nBENEFICIOS: {test_state.calcular_beneficios_estaciones()} \nPERDIDAS: {test_state.calcular_perdidas_estaciones()} \nBALANCE: {test_state.calcular_balance()}\n")
