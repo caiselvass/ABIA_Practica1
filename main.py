@@ -2,6 +2,8 @@ from estaciones_bicing import Estaciones, Estacion
 from state_bicing import EstadoBicing
 from furgoneta_bicing import Furgoneta
 from parameters_bicing import Parameters
+from problem_bicing import ProblemaBicing
+from aima.search import hill_climbing, simulated_annealing
 import random
 
 
@@ -45,8 +47,6 @@ def generate_initial_state(lista_estaciones: list[Estacion], n_furgonetas: int) 
         
         furgoneta.realizar_ruta(estacion_descarga1=estacion_destino1, estacion_descarga2=estacion_destino2, num_bicicletas_carga=num_bicicletas_carga_inicial)
             
-        print(furgoneta)
-
     return EstadoBicing(lista_estaciones, lista_furgonetas)
 
 # Programa principal
@@ -93,5 +93,12 @@ if __name__ == '__main__':
     print("Bicis= %3d Demanda= %3d Disponibles= %3d Necesitan= %3d" %
           (acum_bicicletas, acum_demanda, acum_disponibles, acum_necesarias))
     
-    test_state: EstadoBicing = generate_initial_state(estaciones.lista_estaciones, parameters.n_furgonetas)
-    print(f"\n{'* '*20}\n\nBALANCE RUTAS: {test_state.calcular_balance_rutas()} \nBALANCE ESTACIONES: {test_state.calcular_balance_estaciones()} \nBALANCE TOTAL: {test_state.calcular_balance()}\n")
+    # Experimento
+    initial_state: EstadoBicing = generate_initial_state(estaciones.lista_estaciones, parameters.n_furgonetas)
+    initial_state.imprimir_balances(inicial=True)
+    print(initial_state)
+
+    problema_bicing = ProblemaBicing(initial_state)
+    final_solution = hill_climbing(problema_bicing)
+    final_solution.imprimir_balances()
+    print(final_solution)

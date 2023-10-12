@@ -6,8 +6,8 @@ from typing import Generator
 class ProblemaBicing(Problem):
     def __init__(self, initial_state: EstadoBicing):
         self.expanded_nodes = 0 # FALTA AFEGIR EL +=1 AL METODE CORRESPONENT
-        super.__init__(initial_state)
-        pass
+        super().__init__(initial_state)
+        
 
     def actions(self, state: EstadoBicing) -> Generator:
         return state.generate_actions()

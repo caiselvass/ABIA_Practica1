@@ -1,13 +1,24 @@
 from estaciones_bicing import Estacion
 from furgoneta_bicing import Furgoneta
-from operators_bicing import BicingOperator, CambiarEstacionCarga, CambiarEstacionDescarga, IntercambiarEstacionDescarga, CambiarNumeroBicisCarga
+from functions_bicing import distancia_manhattan
 from typing import Generator
+from operators_bicing import BicingOperator, CambiarEstacionCarga, CambiarEstacionDescarga, IntercambiarEstacionDescarga, CambiarNumeroBicisCarga
 
 class EstadoBicing(object):
     def __init__(self, lista_estaciones: list[Estacion], lista_furgonetas: list[Furgoneta]):
         self.lista_estaciones = lista_estaciones
         self.lista_furgonetas = lista_furgonetas
-        
+
+    def copy(self) -> 'EstadoBicing':
+        new_estado_bicing = EstadoBicing([], [])
+        new_estado_bicing.lista_estaciones = [estacion.copy() for estacion in self.lista_estaciones]
+        new_estado_bicing.lista_furgonetas = [furgoneta.copy() for furgoneta in self.lista_furgonetas]
+        return new_estado_bicing
+    """
+    def copy(self) -> EstadoBicing:
+        return EstadoBicing(self.params, self.v_p.copy(), self.free_spaces.copy())
+    """
+
     def __eq__(self, other):
         return isinstance(other, EstadoBicing) and self.lista_estaciones == other.lista_estaciones and self.lista_furgonetas == other.lista_furgonetas
 
@@ -16,6 +27,14 @@ class EstadoBicing(object):
     
     def __hash__(self):
         return hash((self.lista_estaciones, self.lista_furgonetas))
+    
+    def __str__(self):
+        str_rutas = ""
+        for furgoneta in self.lista_furgonetas:
+            km_trayecto1 = distancia_manhattan((furgoneta.origenX, furgoneta.origenY), furgoneta.coord_destinos[0]) / 1000
+            km_trayecto2 = distancia_manhattan(furgoneta.coord_destinos[0], furgoneta.coord_destinos[1]) / 1000
+            str_rutas += f"   * Furgoneta {furgoneta.id}: Carga={(furgoneta.origenX, furgoneta.origenY)} | Descargas={[furgoneta.coord_destinos[0], furgoneta.coord_destinos[1]]} | KM={km_trayecto1 + km_trayecto2}\n"
+        return f"\nRUTAS CALCULADAS:\n{str_rutas}"
     
     def calcular_balance_rutas(self) -> int:
         balance_rutas = 0
@@ -109,13 +128,26 @@ class EstadoBicing(object):
                     
                     for num_bicicletas_carga in range(0, num_max + 1):
                         yield CambiarNumeroBicisCarga(furgoneta, furgoneta.estacion_origen, num_bicicletas_carga)
-
+    
     def apply_action(self, action: BicingOperator) -> 'EstadoBicing':
+        new_state: EstadoBicing = self.copy()
+        
         if isinstance(action, CambiarEstacionCarga):
             pass
-        if isinstance(action, CambiarEstacionDescarga):
+        elif isinstance(action, CambiarEstacionDescarga):
             pass
-        if isinstance(action, IntercambiarEstacionDescarga):
+        elif isinstance(action, IntercambiarEstacionDescarga):
             pass
-        if isinstance(action, CambiarNumeroBicisCarga):
+        elif isinstance(action, CambiarNumeroBicisCarga):
             pass
+        return new_state
+
+    def imprimir_balances(self, inicial: bool = False):
+        if inicial:
+            print(f"\n{'*'*30 + ' [ ESTADO INICIAL ] ' + '*'*30}\n")
+        else:
+            print(f"\n{'*'*30 + ' [ SOLUCIÓN FINAL ] ' + '*'*30}\n")
+            
+        print(f"BALANCE RUTAS: {self.calcular_balance_rutas()}\n" + \
+                    f"BALANCE ESTACIONES: {self.calcular_balance_estaciones()}\n" + \
+                        f"BALANCE TOTAL: {self.calcular_balance()}")

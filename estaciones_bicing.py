@@ -21,6 +21,15 @@ class Estacion(object):
         self.num_bicicletas_no_usadas: int = 0
         self.num_bicicletas_next: int = 0
 
+    def copy(self):
+        new_estacion = Estacion(self.coordX, self.coordY)
+        new_estacion.num_bicicletas_no_usadas = self.num_bicicletas_no_usadas
+        new_estacion.num_bicicletas_next = self.num_bicicletas_next
+        new_estacion.demanda = self.demanda
+        new_estacion.diferencia = self.diferencia
+        # Copia y asigna otros atributos si es necesario
+        return new_estacion
+
 
 class Estaciones(object):
     """
