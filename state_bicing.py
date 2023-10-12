@@ -17,28 +17,34 @@ class EstadoBicing(object):
         return hash((self.lista_estaciones, self.lista_furgonetas))
     
     def calcular_balance_rutas(self) -> int:
-        coste_total = 0
+        balance_rutas = 0
         for furgoneta in self.lista_furgonetas:
-            coste_total -= furgoneta.calcular_coste_ruta()
-        
-        return coste_total
+            balance_rutas -= furgoneta.calcular_coste_ruta()
+        return balance_rutas
 
-    def calcular_beneficios_estaciones(self) -> int:
-        beneficios_estaciones = 0
-        for furgoneta in self.lista_furgonetas:
-            beneficios_estaciones += furgoneta.beneficio_descargas
-        
-        return beneficios_estaciones
-    
-    def calcular_perdidas_estaciones(self) -> int:
-        demanda_total = 0
+    def calcular_balance_estaciones(self) -> int:
+        # estacion.diferencia = estacion.num_bicicletas_next - estacion.demanda
+        balance_estaciones = 0
         for estacion in self.lista_estaciones:
-            demanda_total -= estacion.demanda
-            
-        return demanda_total
+            diferencia_inicial = estacion.num_bicicletas_next - estacion.demanda      
+            diferencia_final = estacion.diferencia
+
+            if diferencia_final < 0 and diferencia_final < diferencia_inicial:
+                print("\n\n", estacion)
+
+            if diferencia_final >= 0 and diferencia_inicial <= 0:
+                balance_estaciones += abs(diferencia_inicial)
+            elif diferencia_final < 0:
+                if diferencia_inicial >= 0:
+                    balance_estaciones += diferencia_final
+                else:
+                    balance_estaciones += diferencia_final - diferencia_inicial
+                
+
+        return balance_estaciones
     
     def calcular_balance(self):
-        return self.calcular_perdidas_estaciones() + self.calcular_beneficios_estaciones() - self.calcular_balance_rutas()
+        return self.calcular_balance_estaciones() + self.calcular_balance_rutas()
 
     def heuristic(self):
         # GANANCIAS
@@ -46,7 +52,7 @@ class EstadoBicing(object):
             #Es decir, nos paga por las bicicletas adicionales que haya en una estación respecto a la previsión de cuantas bicicletas habrá en la estación en la
             #hora siguiente, siempre que no superen la demanda prevista."
         # PERDIDAS
-            #nos cobrará un euro por cada bicicleta que transportemos que aleje a una estación de su previsión.
+            #nos cobrará un euro por cada bicicleta que transportemos que aleje a una estación de su previsión.  
             #Es decir, nos descontarán por las bicicletas que movamos que hagan que una estación quede por debajo de la demanda prevista.
         # COSTE POR KM
             # nb es el número de bicicletas que transportamos en una furgoneta, el coste en euros por kilómetro recorrido es ((nb + 9) div 10), donde div es la división entera.

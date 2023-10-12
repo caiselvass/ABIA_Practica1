@@ -13,6 +13,7 @@ class CargarBicicletas(BicingOperator):
     def __repr__(self) -> str:
         return f"Cargar {self.n_bicicletas_carga} bicis a {self.furgoneta}"
 
+
 class DescargarBicicletas(BicingOperator):
     def __init__(self, furgoneta: Furgoneta, estacion: Estacion, n_bicicletas_descarga: int):
         self.furgoneta = furgoneta
@@ -21,6 +22,7 @@ class DescargarBicicletas(BicingOperator):
     
     def __repr__(self) -> str:
         return f"Descargar {self.n_bicicletas_descarga} bicicletas {self.furgoneta}"
+
 
 class Distribute_Bicicletas(BicingOperator):
     def __init__(self, furgoneta: Furgoneta, estaciones: list[Estacion], bicicletas_por_estacion: list[int]):
@@ -39,9 +41,7 @@ class Swap_Movement(BicingOperator):
     
     def __repr__(self) -> str:
         return f"Swap {self.bicicletas_intercambio} bicycles between van {self.furgoneta1} and van {self.furgoneta2}"
-
-    # def __repr__(self):
-    #     str_estaciones_destino = ""
-    #     for estacion in self.estaciones_destino:
-    #         str_estaciones_destino += f"{estacion.__repr__()}"
-    #     return f"Move furgoneta: {self.furgoneta.__repr__()}:\nEstacion carga: \nTo estaciones: {s"
+    
+class CambiarEstacionCarga(BicingOperator):
+    def __init__(self):
+        pass

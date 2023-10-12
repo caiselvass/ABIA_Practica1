@@ -10,7 +10,6 @@ class Furgoneta(object):
         self.coord_destinos: list[tuple] = [(self.origenX, self.origenY), (self.origenX, self.origenY)]
         self.num_bicicletas_descargadas_destino1: int = 0
         self.num_bicicletas_descargadas_destino2: int = 0
-        self.beneficio_descargas: int = 0
 
     def set_coord_destinos(self, destino1: tuple[int, int], destino2: tuple[int, int]):
         if distancia_manhattan((self.origenX, self.origenY), destino1) < distancia_manhattan((self.origenX, self.origenY), destino2):
@@ -25,19 +24,27 @@ class Furgoneta(object):
     #def set_num_bicicletas_cargadas(self, num_bicicletas: int):
         #self.num_bicicletas_cargadas = num_bicicletas
 
-    def cargar_bicicletas(self, estacion_carga: Estacion, estaciones_destino: list[Estacion]):
-        self.num_bicicletas_cargadas = min(30, estacion_carga.num_bicicletas_no_usadas, \
-                                                    abs(estaciones_destino[0].diferencia) + abs(estaciones_destino[1].diferencia))
+    def realizar_ruta(self, estacion_carga: Estacion, estacion_descarga1: Estacion, estacion_descarga2: Estacion, num_bicicletas_carga: int):
+        self.__cargar_bicicletas(estacion_carga, num_bicicletas_carga)
+        self.__descargar_bicicletas(estacion_descarga1, estacion_descarga2)
+        self.beneficio_descargas = self.num_bicicletas_descargadas_destino1 + self.num_bicicletas_descargadas_destino2 - self.num_bicicletas_cargadas   
 
-    def descargar_bicicletas(self, estacion_descarga1: Estacion):
-        self.num_bicicletas_descargadas_destino1 = min(self.num_bicicletas_cargadas, \
-                                                                abs(estacion_descarga1.diferencia))
+    def __cargar_bicicletas(self, estacion_carga: Estacion, num_bicicletas_carga: int):
+        print(f"{estacion_carga} carreguem {num_bicicletas_carga} bicis")
+        self.num_bicicletas_cargadas = num_bicicletas_carga
+        estacion_carga.num_bicicletas_no_usadas -= num_bicicletas_carga
+        estacion_carga.diferencia -= num_bicicletas_carga
+        print(f"{estacion_carga}\n")
+
+    def __descargar_bicicletas(self, estacion_descarga1: Estacion, estacion_descarga2: Estacion):
+        self.num_bicicletas_descargadas_destino1 = min(self.num_bicicletas_cargadas, abs(estacion_descarga1.diferencia))
         self.num_bicicletas_descargadas_destino2 = self.num_bicicletas_cargadas - self.num_bicicletas_descargadas_destino1
 
-    def actualizar_beneficio(self, estacion_descarga2: Estacion):    
-        self.beneficio_descargas += self.num_bicicletas_descargadas_destino1 * 2 # El euro que nos dan y el que ya no nos quitan
-        self.beneficio_descargas += min(self.num_bicicletas_cargadas - self.num_bicicletas_descargadas_destino1, \
-                                             estacion_descarga2.demanda) * 2 # El euro que nos dan y el que ya no nos quitan
+
+        estacion_descarga1.num_bicicletas_no_usadas += self.num_bicicletas_descargadas_destino1
+        estacion_descarga2.num_bicicletas_no_usadas += self.num_bicicletas_descargadas_destino2 
+        estacion_descarga1.diferencia += self.num_bicicletas_descargadas_destino1
+        estacion_descarga2.diferencia += self.num_bicicletas_descargadas_destino2
     
     def calcular_coste_ruta(self):
         nb_trayecto1 = self.num_bicicletas_cargadas
