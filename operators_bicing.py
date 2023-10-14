@@ -6,7 +6,7 @@ class BicingOperator(object):
 
 
 class CambiarEstacionCarga(BicingOperator):
-    def __init__(self, furgoneta: Furgoneta, estacion: Estacion):
+    def __init__(self, furgoneta: Furgoneta, estacion: Estacion) -> None:
         self.furgoneta = furgoneta
         self.estacion = estacion
 
@@ -15,7 +15,7 @@ class CambiarEstacionCarga(BicingOperator):
   
 
 class CambiarEstacionDescarga(BicingOperator):
-    def __init__(self, furgoneta: Furgoneta, estacion: Estacion, n_estacion: int):
+    def __init__(self, furgoneta: Furgoneta, estacion: Estacion, n_estacion: int) -> None:
         assert n_estacion in {0,1}, "n_estacion debe ser 0 o 1"
         self.estacion = estacion
         self.furgoneta = furgoneta
@@ -26,7 +26,7 @@ class CambiarEstacionDescarga(BicingOperator):
 
 
 class IntercambiarEstacionDescarga(BicingOperator):
-    def __init__(self, furgoneta1: Furgoneta, furgoneta2: Furgoneta, n_estacion1: int, n_estacion2: int):
+    def __init__(self, furgoneta1: Furgoneta, furgoneta2: Furgoneta, n_estacion1: int, n_estacion2: int) -> None:
         assert n_estacion1 in {0, 1} and n_estacion2 in {0, 1}, "n_estacion1 y n_estacion2 deben ser 0 o 1"
         self.furgoneta1 = furgoneta1
         self.furgoneta2 = furgoneta2
@@ -38,7 +38,7 @@ class IntercambiarEstacionDescarga(BicingOperator):
 
 
 class CambiarNumeroBicisCarga(BicingOperator):
-    def __init__(self, furgoneta: Furgoneta, estacion_carga: Estacion, num_bicicletas_carga: int):
+    def __init__(self, furgoneta: Furgoneta, estacion_carga: Estacion, num_bicicletas_carga: int) -> None:
         self.furgoneta = furgoneta
         self.estacion_carga = estacion_carga
         self.num_bicicletas_carga = num_bicicletas_carga

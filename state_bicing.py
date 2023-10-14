@@ -5,7 +5,7 @@ from typing import Generator
 from operators_bicing import BicingOperator, CambiarEstacionCarga, CambiarEstacionDescarga, IntercambiarEstacionDescarga, CambiarNumeroBicisCarga
 
 class EstadoBicing(object):
-    def __init__(self, lista_estaciones: list[Estacion], lista_furgonetas: list[Furgoneta]):
+    def __init__(self, lista_estaciones: list[Estacion], lista_furgonetas: list[Furgoneta]) -> None:
         self.lista_estaciones = lista_estaciones
         self.lista_furgonetas = lista_furgonetas
 
@@ -19,16 +19,16 @@ class EstadoBicing(object):
         return EstadoBicing(self.params, self.v_p.copy(), self.free_spaces.copy())
     """
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return isinstance(other, EstadoBicing) and self.lista_estaciones == other.lista_estaciones and self.lista_furgonetas == other.lista_furgonetas
 
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
         return hash(self) < hash(other)
     
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.lista_estaciones, self.lista_furgonetas))
     
-    def __str__(self):
+    def __str__(self) -> str:
         str_rutas = ""
         for furgoneta in self.lista_furgonetas:
             km_trayecto1 = distancia_manhattan((furgoneta.origenX, furgoneta.origenY), furgoneta.coord_destinos[0]) / 1000
@@ -36,7 +36,7 @@ class EstadoBicing(object):
             str_rutas += f"   * Furgoneta {furgoneta.id}: Carga={(furgoneta.origenX, furgoneta.origenY)} | Descargas={[furgoneta.coord_destinos[0], furgoneta.coord_destinos[1]]} | KM={km_trayecto1 + km_trayecto2}\n"
         return f"\nRUTAS CALCULADAS:\n{str_rutas}"
     
-    def calcular_balance_rutas(self) -> int:
+    def calcular_balance_rutas(self) -> float:
         balance_rutas = 0
         for furgoneta in self.lista_furgonetas:
             balance_rutas -= furgoneta.calcular_coste_ruta()
@@ -57,13 +57,12 @@ class EstadoBicing(object):
                 else:
                     balance_estaciones += diferencia_final - diferencia_inicial
                 
-
         return balance_estaciones
     
-    def calcular_balance(self):
+    def calcular_balance(self) -> float:
         return self.calcular_balance_estaciones() + self.calcular_balance_rutas()
 
-    def heuristic(self):
+    def heuristic(self) -> float:
         return self.calcular_balance()
         
         # GANANCIAS
@@ -142,7 +141,7 @@ class EstadoBicing(object):
             pass
         return new_state
 
-    def imprimir_balances(self, inicial: bool = False):
+    def imprimir_balances(self, inicial: bool = False) -> None:
         if inicial:
             print(f"\n{'*'*30 + ' [ ESTADO INICIAL ] ' + '*'*30}\n")
         else:

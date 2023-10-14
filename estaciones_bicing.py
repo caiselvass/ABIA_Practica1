@@ -21,7 +21,7 @@ class Estacion(object):
         self.num_bicicletas_no_usadas: int = 0
         self.num_bicicletas_next: int = 0
 
-    def copy(self):
+    def copy(self) -> 'Estacion':
         new_estacion = Estacion(self.coordX, self.coordY)
         new_estacion.num_bicicletas_no_usadas = self.num_bicicletas_no_usadas
         new_estacion.num_bicicletas_next = self.num_bicicletas_next

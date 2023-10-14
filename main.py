@@ -6,10 +6,13 @@ from problem_bicing import ProblemaBicing
 from aima.search import hill_climbing, simulated_annealing
 import random
 
+    # PROPOSTA PER GUARDAR LES ESTACIONS EN UNA LLISTA (a dins de cada diccionari només he posat els valors que modifiquem al llarg de la resolució del problema)
+    # estaciones: list[dict] = [{'diferencia': est.num_bicicletas_next - est.demanda, 'num_bicicletas_no_usadas': est.num_bicicletas_no_usadas} for est in lista_estaciones]
+
 
 # Declaración de funciones
 def generate_initial_state(lista_estaciones: list[Estacion], n_furgonetas: int) -> EstadoBicing:
-    # Creamos una lista con las estaciones con diferencia positiva y otra con las estaciones con diferencia negativa
+    # Creamos una lista con las estaciones con diferencia positiva y otra con las estaciones con diferencia negativa    
     lista_est_excedente, lista_est_faltante = [], []
     for est in lista_estaciones:
         if est.diferencia < 0:

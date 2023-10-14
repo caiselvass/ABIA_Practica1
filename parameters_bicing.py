@@ -1,5 +1,5 @@
 class Parameters:
-	def __init__(self, n_estaciones: int, n_bicicletas: int, n_furgonetas: int, seed: int):
+	def __init__(self, n_estaciones: int, n_bicicletas: int, n_furgonetas: int, seed: int) -> None:
 		assert n_estaciones > n_furgonetas, "El número de estaciones debe ser mayor que el número de furgonetas"
 		self.n_estaciones = n_estaciones
 		self.n_bicicletas = n_bicicletas

@@ -1,4 +1,4 @@
-def distancia_manhattan(coord1: tuple, coord2: tuple):
+def distancia_manhattan(coord1: tuple, coord2: tuple) -> int:
     """
     Calcula la distancia de Manhattan entre dos puntos.
     """
