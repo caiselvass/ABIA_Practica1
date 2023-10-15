@@ -1,17 +1,17 @@
-from estaciones_bicing import Estacion
 from furgoneta_bicing import Furgoneta
+from parameters_bicing import params
 from functions_bicing import distancia_manhattan
 from typing import Generator
 from operators_bicing import BicingOperator, CambiarEstacionCarga, CambiarEstacionDescarga, IntercambiarEstacionDescarga, CambiarNumeroBicisCarga
 
 class EstadoBicing(object):
-    def __init__(self, lista_estaciones: list[Estacion], lista_furgonetas: list[Furgoneta]) -> None:
-        self.lista_estaciones = lista_estaciones
+    def __init__(self, info_estaciones: list[dict], lista_furgonetas: list[Furgoneta]) -> None:
+        self.info_estaciones = info_estaciones
         self.lista_furgonetas = lista_furgonetas
 
     def copy(self) -> 'EstadoBicing':
         new_estado_bicing = EstadoBicing([], [])
-        new_estado_bicing.lista_estaciones = [estacion.copy() for estacion in self.lista_estaciones]
+        new_estado_bicing.info_estaciones = [estacion.copy() for estacion in self.info_estaciones]
         new_estado_bicing.lista_furgonetas = [furgoneta.copy() for furgoneta in self.lista_furgonetas]
         return new_estado_bicing
     """
@@ -20,13 +20,13 @@ class EstadoBicing(object):
     """
 
     def __eq__(self, other) -> bool:
-        return isinstance(other, EstadoBicing) and self.lista_estaciones == other.lista_estaciones and self.lista_furgonetas == other.lista_furgonetas
+        return isinstance(other, EstadoBicing) and self.info_estaciones == other.info_estaciones and self.lista_furgonetas == other.lista_furgonetas
 
     def __lt__(self, other) -> bool:
         return hash(self) < hash(other)
     
     def __hash__(self) -> int:
-        return hash((self.lista_estaciones, self.lista_furgonetas))
+        return hash((self.info_estaciones, self.lista_furgonetas))
     
     def __str__(self) -> str:
         str_rutas = ""
@@ -34,7 +34,7 @@ class EstadoBicing(object):
             km_trayecto1 = distancia_manhattan((furgoneta.origenX, furgoneta.origenY), furgoneta.coord_destinos[0]) / 1000
             km_trayecto2 = distancia_manhattan(furgoneta.coord_destinos[0], furgoneta.coord_destinos[1]) / 1000
             str_rutas += f"   * Furgoneta {furgoneta.id}: Carga={(furgoneta.origenX, furgoneta.origenY)} | Descargas={[furgoneta.coord_destinos[0], furgoneta.coord_destinos[1]]} | KM={km_trayecto1 + km_trayecto2}\n"
-        return f"\nRUTAS CALCULADAS:\n{str_rutas}"
+        return f"\n\nRUTAS CALCULADAS:\n{str_rutas}"
     
     def calcular_balance_rutas(self) -> float:
         balance_rutas = 0
@@ -45,9 +45,9 @@ class EstadoBicing(object):
     def calcular_balance_estaciones(self) -> int:
         # estacion.diferencia = estacion.num_bicicletas_next - estacion.demanda
         balance_estaciones = 0
-        for estacion in self.lista_estaciones:
-            diferencia_inicial = estacion.num_bicicletas_next - estacion.demanda      
-            diferencia_final = estacion.diferencia
+        for est in self.info_estaciones:
+            diferencia_inicial = params.estaciones[est['index']].num_bicicletas_next - params.estaciones[est['index']].demanda      
+            diferencia_final = est['dif']
 
             if diferencia_final >= 0 and diferencia_inicial <= 0:
                 balance_estaciones += abs(diferencia_inicial)
@@ -80,16 +80,16 @@ class EstadoBicing(object):
         # Generate all the possible actions for the current state of the problem:
         for furgoneta in self.lista_furgonetas:
             # CambiarEstacionCarga
-            for estacion in self.lista_estaciones:
-                if estacion.coordX != furgoneta.origenX and estacion.coordY != furgoneta.origenY:
-                    yield CambiarEstacionCarga(furgoneta, estacion)
+            for est in self.info_estaciones:
+                if params.estaciones[est['index']].coordX != furgoneta.origenX and params.estaciones[est['index']].coordY != furgoneta.origenY:
+                    yield CambiarEstacionCarga(furgoneta, est)
             
             # CambiarEstacionDescarga
-            for estacion in self.lista_estaciones:
+            for est in self.info_estaciones:
                 for n_estacion in {0, 1}:
                     # No hacemos comprobación de que la nueva estación de descarga sea distinta a la anterior porque consideramos 
                     # que se puede hacer un movimiento a la misma estación de descarga (como quedarse quieto)
-                    yield CambiarEstacionDescarga(furgoneta, estacion, n_estacion)
+                    yield CambiarEstacionDescarga(furgoneta, est, n_estacion)
             
             # IntercambiarEstacionDescarga
             for furgoneta2 in self.lista_furgonetas:
@@ -100,33 +100,33 @@ class EstadoBicing(object):
                                 yield IntercambiarEstacionDescarga(furgoneta, furgoneta2, n_estacion1, n_estacion2)
             
             # CambiarNumeroBicisCarga
-            if furgoneta.estacion_origen.num_bicicletas_no_usadas > 0:
+            if furgoneta.info_est_origen['disp'] > 0:
                 # Comprobamos que no haya ningua estación destino igual a la de Origen, para evitar cargar bicicletas de más en ese caso
                 if (furgoneta.origenX, furgoneta.origenY) == furgoneta.coord_destinos[0] == furgoneta.coord_destinos[1]:
-                    yield CambiarNumeroBicisCarga(furgoneta, furgoneta.estacion_origen, num_bicicletas_carga=0)
+                    yield CambiarNumeroBicisCarga(furgoneta, furgoneta.info_est_origen, num_bicicletas_carga=0)
                 
                 # Caso solo haremos 1 movimiento "real"
                 elif (furgoneta.origenX, furgoneta.origenY) == furgoneta.coord_destinos[0]: 
-                    dif_destino1 = furgoneta.estaciones_destino[1].diferencia
+                    dif_destino1 = furgoneta.info_est_destino[1]['dif']
                     num_max = min(30, \
-                                  furgoneta.estacion_origen.diferencia, \
-                                    furgoneta.estacion_origen.num_bicicletas_no_usadas, \
+                                  furgoneta.info_est_origen['dif'], \
+                                    furgoneta.info_est_origen['disp'], \
                                         abs(dif_destino1) if dif_destino1 < 0 else 0)
                     
                     for num_bicicletas_carga in range(0, num_max + 1):
-                        yield CambiarNumeroBicisCarga(furgoneta, furgoneta.estacion_origen, num_bicicletas_carga=0)
+                        yield CambiarNumeroBicisCarga(furgoneta, furgoneta.info_est_origen, num_bicicletas_carga=0)
 
                 # Caso 2 movimientos "reales"
                 else:
-                    dif_destino1 = furgoneta.estaciones_destino[0].diferencia
-                    dif_destino2 = furgoneta.estaciones_destino[1].diferencia
+                    dif_destino1 = furgoneta.info_est_destino[0]['dif']
+                    dif_destino2 = furgoneta.info_est_destino[1]['dif']
                     num_max = min(30, \
-                                  furgoneta.estacion_origen.diferencia, \
-                                    furgoneta.estacion_origen.num_bicicletas_no_usadas, \
+                                  furgoneta.info_est_origen['dif'], \
+                                    furgoneta.info_est_origen['disp'], \
                                         abs(dif_destino1) if dif_destino1 < 0 else 0 + abs(dif_destino2) if dif_destino2 < 0 else 0)
                     
                     for num_bicicletas_carga in range(0, num_max + 1):
-                        yield CambiarNumeroBicisCarga(furgoneta, furgoneta.estacion_origen, num_bicicletas_carga)
+                        yield CambiarNumeroBicisCarga(furgoneta, furgoneta.info_est_origen, num_bicicletas_carga)
     
     def apply_action(self, action: BicingOperator) -> 'EstadoBicing':
         new_state: EstadoBicing = self.copy()
@@ -141,12 +141,15 @@ class EstadoBicing(object):
             pass
         return new_state
 
-    def imprimir_balances(self, inicial: bool = False) -> None:
+    def print_state(self, inicial: bool = False) -> str:
+        str_balances = ""
         if inicial:
-            print(f"\n{'*'*30 + ' [ ESTADO INICIAL ] ' + '*'*30}\n")
+            str_balances += f"\n{'*'*35 + ' [ ESTADO INICIAL ] ' + '*'*35}\n"
         else:
-            print(f"\n{'*'*30 + ' [ SOLUCIÓN FINAL ] ' + '*'*30}\n")
+            str_balances += f"\n{'*'*35 + ' [ SOLUCIÓN FINAL ] ' + '*'*35}\n"
             
-        print(f"BALANCE RUTAS: {self.calcular_balance_rutas()}\n" + \
+        str_balances += f"\nBALANCE RUTAS: {self.calcular_balance_rutas()}\n" + \
                     f"BALANCE ESTACIONES: {self.calcular_balance_estaciones()}\n" + \
-                        f"BALANCE TOTAL: {self.calcular_balance()}")
+                        f"BALANCE TOTAL: {self.calcular_balance()}"
+        
+        print(str_balances + self.__str__())
