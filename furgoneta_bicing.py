@@ -65,6 +65,9 @@ class Furgoneta(object):
         estacion_descarga2['dif'] += self.num_bicicletas_descargadas_destino2
     
     def calcular_coste_ruta(self) -> float:
+        # COSTE POR KM
+        # nb es el número de bicicletas que transportamos en una furgoneta, el coste en euros por kilómetro recorrido es ((nb + 9) div 10), donde div es la división entera.
+        
         nb_trayecto1 = self.num_bicicletas_cargadas
         nb_trayecto2 = self.num_bicicletas_descargadas_destino2
         

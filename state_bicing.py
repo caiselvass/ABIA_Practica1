@@ -3,6 +3,7 @@ from parameters_bicing import params
 from functions_bicing import distancia_manhattan
 from typing import Generator
 from operators_bicing import BicingOperator, CambiarEstacionCarga, CambiarEstacionDescarga, IntercambiarEstacionDescarga, CambiarNumeroBicisCarga
+import copy
 
 class EstadoBicing(object):
     def __init__(self, info_estaciones: list[dict], lista_furgonetas: list[Furgoneta]) -> None:
@@ -10,11 +11,18 @@ class EstadoBicing(object):
         self.lista_furgonetas = lista_furgonetas
 
     def copy(self) -> 'EstadoBicing':
+        # Creamos copias manuales de las estructuras de datos
+        new_info_estaciones = [{key: value for key, value in estacion.items()} for estacion in self.info_estaciones]
+        new_lista_furgonetas = [furgoneta.copy() for furgoneta in self.lista_furgonetas]
+        return EstadoBicing(new_info_estaciones, new_lista_furgonetas)
+    
+    """
+    def copy(self) -> 'EstadoBicing':
         new_estado_bicing = EstadoBicing([], [])
         new_estado_bicing.info_estaciones = [estacion.copy() for estacion in self.info_estaciones]
         new_estado_bicing.lista_furgonetas = [furgoneta.copy() for furgoneta in self.lista_furgonetas]
         return new_estado_bicing
-    """
+    
     def copy(self) -> EstadoBicing:
         return EstadoBicing(self.params, self.v_p.copy(), self.free_spaces.copy())
     """
@@ -50,8 +58,10 @@ class EstadoBicing(object):
             diferencia_final = est['dif']
 
             if diferencia_final >= 0 and diferencia_inicial <= 0:
+                # Ganancias
                 balance_estaciones += abs(diferencia_inicial)
             elif diferencia_final < 0:
+                # Pérdidas
                 if diferencia_inicial >= 0:
                     balance_estaciones += diferencia_final
                 else:
@@ -65,15 +75,7 @@ class EstadoBicing(object):
     def heuristic(self) -> float:
         return self.calcular_balance()
         
-        # GANANCIAS
-            #Nos paga un euro por cada bicicleta que transportemos que haga que el número de bicicletas de una estación se acerque a la demanda. 
-            #Es decir, nos paga por las bicicletas adicionales que haya en una estación respecto a la previsión de cuantas bicicletas habrá en la estación en la
-            #hora siguiente, siempre que no superen la demanda prevista."
-        # PERDIDAS
-            #nos cobrará un euro por cada bicicleta que transportemos que aleje a una estación de su previsión.  
-            #Es decir, nos descontarán por las bicicletas que movamos que hagan que una estación quede por debajo de la demanda prevista.
-        # COSTE POR KM
-            # nb es el número de bicicletas que transportamos en una furgoneta, el coste en euros por kilómetro recorrido es ((nb + 9) div 10), donde div es la división entera.
+             
 
 
     def generate_actions(self) -> Generator:
