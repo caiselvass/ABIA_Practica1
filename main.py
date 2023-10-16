@@ -77,7 +77,6 @@ def generate_initial_state(greedy: bool = False, semilla: Union[int, None] = Non
             furgoneta.id_est_dest2 = id_est_d2
                 
     state = EstadoBicing(info_estaciones=info_estaciones, lista_furgonetas=lista_furgonetas)
-    state.heuristic()
     return state
     
 # Programa principal
@@ -96,7 +95,7 @@ if __name__ == '__main__':
     acum_disponibles = 0
     acum_necesarias = 0
 
-    print("Sta Cur Dem Dif Exc")
+    #print("Sta Cur Dem Dif Exc")
 
     for id_estacion, estacion in enumerate(estaciones.lista_estaciones):
         num_bicicletas_no_usadas = estacion.num_bicicletas_no_usadas
@@ -115,14 +114,15 @@ if __name__ == '__main__':
             excedente = 0
             acum_necesarias = acum_necesarias - diferencia
 
-        print("est %2s = %2d %2d" % (id_estacion, estacion.coordX, estacion.coordY))
-        print("%3d %3d %3d %3d %3d" % (num_bicicletas_no_usadas, num_bicicletas_next, demanda, diferencia, excedente))
+        #print("est %2s = %2d %2d" % (id_estacion, estacion.coordX, estacion.coordY))
+        #print("%3d %3d %3d %3d %3d" % (num_bicicletas_no_usadas, num_bicicletas_next, demanda, diferencia, excedente))
 
-    print("Bicis= %3d Demanda= %3d Disponibles= %3d Necesitan= %3d" %
-          (acum_bicicletas, acum_demanda, acum_disponibles, acum_necesarias))
+    #print("Bicis= %3d Demanda= %3d Disponibles= %3d Necesitan= %3d" %
+          #(acum_bicicletas, acum_demanda, acum_disponibles, acum_necesarias))
     
     # Experimento
-    initial_state: EstadoBicing = generate_initial_state(greedy=True)
+    initial_state: EstadoBicing = generate_initial_state(greedy=True, semilla=42)
+    initial_state.heuristic()
     initial_state.print_state(inicial=True)
 
     problema_bicing = ProblemaBicing(initial_state)
