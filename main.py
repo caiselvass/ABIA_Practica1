@@ -77,6 +77,7 @@ def generate_initial_state(greedy: bool = False, semilla: Union[int, None] = Non
             furgoneta.id_est_dest2 = id_est_d2
                 
     state = EstadoBicing(info_estaciones=info_estaciones, lista_furgonetas=lista_furgonetas)
+    state.heuristic()
     return state
     
 # Programa principal

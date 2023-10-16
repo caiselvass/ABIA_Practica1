@@ -9,6 +9,7 @@ from operators_bicing import BicingOperator, \
                 CambiarEstacionDescarga, \
                     IntercambiarEstacionDescarga
 
+
 class EstadoBicing(object):
     def __init__(self, info_estaciones: list[dict], lista_furgonetas: list[Furgoneta]) -> None:
         self.info_estaciones = info_estaciones
@@ -82,7 +83,7 @@ class EstadoBicing(object):
 
         coste_a_b = ((carga + 9) // 10) * distancia_a_b
         coste_b_c = ((descarga2 + 9) // 10) * distancia_b_c
-
+        
         self.balances_rutas[id_furgoneta] = -(coste_a_b + coste_b_c)
 
         return -(coste_a_b + coste_b_c)
@@ -156,7 +157,7 @@ class EstadoBicing(object):
                 else:
                     balance_estaciones += diferencia_final - diferencia_inicial
             
-        self.balances_estaciones = balance_estaciones
+        self.balance_estaciones = balance_estaciones
                 
         return balance_estaciones
     
@@ -298,7 +299,7 @@ class EstadoBicing(object):
             str_balances += f"\n{'*'*35 + ' [ ESTADO INICIAL ] ' + '*'*35}\n"
         else:
             str_balances += f"\n{'*'*35 + ' [ SOLUCIÓN FINAL ] ' + '*'*35}\n"
-            
+        
         str_balances += f"\nBALANCE RUTAS: {sum(self.balances_rutas)}\n" + \
                     f"BALANCE ESTACIONES: {self.balance_estaciones}\n" + \
                         f"BALANCE TOTAL: {self.balance_total}"
