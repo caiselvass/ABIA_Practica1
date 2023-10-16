@@ -46,11 +46,18 @@ class Furgoneta(object):
     def set_num_bicicletas_cargadas(self, num_bicicletas: int):
         self.num_bicicletas_cargadas = num_bicicletas
 
+    def calcular_bicicletas_carga(self) -> int:
+            num_bicicletas_cargadas = min(30, self.info_est_origen['disp'] if self.info_est_origen['disp'] > 0 else 0, \
+                        abs(self.info_est_destino[0]['dif']) if self.info_est_destino[0]['dif'] < 0 else 0 \
+                        + abs(self.info_est_destino[1]['dif']) if self.info_est_destino[1]['dif'] < 0 else 0)
+            
+            return num_bicicletas_cargadas
+
     def realizar_ruta(self) -> None:
         self.__cargar_bicicletas(self.num_bicicletas_cargadas)
         self.__descargar_bicicletas(estacion_descarga1=self.info_est_destino[0], estacion_descarga2=self.info_est_destino[1])
     
-    def __cargar_bicicletas(self, num_bicicletas_carga: int) -> None:
+    def __cargar_bicicletas(self, num_bicicletas_carga: Union[int, None] = None) -> None:
         self.num_bicicletas_cargadas = num_bicicletas_carga
         self.info_est_origen['disp'] -= num_bicicletas_carga
         self.info_est_origen['dif'] -= num_bicicletas_carga
@@ -58,7 +65,6 @@ class Furgoneta(object):
     def __descargar_bicicletas(self, estacion_descarga1: dict, estacion_descarga2: dict) -> None:
         self.num_bicicletas_descargadas_destino1 = min(self.num_bicicletas_cargadas, abs(estacion_descarga1['dif']) if estacion_descarga1['dif'] < 0 else 0)
         self.num_bicicletas_descargadas_destino2 = self.num_bicicletas_cargadas - self.num_bicicletas_descargadas_destino1
-
         estacion_descarga1['disp'] += self.num_bicicletas_descargadas_destino1
         estacion_descarga2['disp'] += self.num_bicicletas_descargadas_destino2 
         estacion_descarga1['dif'] += self.num_bicicletas_descargadas_destino1

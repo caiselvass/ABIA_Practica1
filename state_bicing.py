@@ -2,7 +2,7 @@ from furgoneta_bicing import Furgoneta
 from parameters_bicing import params
 from functions_bicing import distancia_manhattan
 from typing import Generator
-from operators_bicing import BicingOperator, CambiarEstacionCarga, CambiarEstacionDescarga, IntercambiarEstacionDescarga, CambiarNumeroBicisCarga
+from operators_bicing import BicingOperator, CambiarEstacionCarga, CambiarEstacionDescarga, IntercambiarEstacionDescarga, CambiarNumeroBicisCarga, IntercambiarEstacionCarga
 
 class EstadoBicing(object):
     def __init__(self, info_estaciones: list[dict], lista_furgonetas: list[Furgoneta]) -> None:
@@ -68,32 +68,50 @@ class EstadoBicing(object):
     def calcular_balance(self) -> float:
         return self.calcular_balance_estaciones() + self.calcular_balance_rutas()
 
+    def realizar_ruta_furgoneta(self, id_furgoneta: int):
+        furgoneta: Furgoneta = self.lista_furgonetas[id_furgoneta]
+        furgoneta.realizar_ruta()
+        cambios: list[dict] = [furgoneta.info_est_origen] + furgoneta.info_est_destino
+        for est in cambios:
+            self.info_estaciones[est['index']] = {key: value for key, value in est.items()}
+
+
     def heuristic(self) -> float:
         return self.calcular_balance()
         
     def generate_actions(self) -> Generator:
         # Generate all the possible actions for the current state of the problem:
+        estaciones_origen = set()
         for furgoneta in self.lista_furgonetas:
+            estaciones_origen.add(furgoneta.info_est_origen['index'])
+
+        for furgoneta in self.lista_furgonetas:
+              # CambiarEsigetacionCarga
             for est in self.info_estaciones:
-                if params.estaciones[est['index']].coordX != furgoneta.origenX and params.estaciones[est['index']].coordY != furgoneta.origenY:
+                if est['index'] not in estaciones_origen:
                     yield CambiarEstacionCarga(furgoneta, est)
             
+            """# IntercambiarEstacionCarga
+            for furgoneta2 in self.lista_furgonetas:
+                if furgoneta != furgoneta2:
+                    yield IntercambiarEstacionCarga(furgoneta1=furgoneta, furgoneta2=furgoneta2)
+
             # CambiarEstacionDescarga
             for est in self.info_estaciones:
-                for id_estacion in {0, 1}:
+                for pos_est in {0, 1}:
                     # No hacemos comprobación de que la nueva estación de descarga sea distinta a la anterior porque consideramos 
                     # que se puede hacer un movimiento a la misma estación de descarga (como quedarse quieto)
-                    yield CambiarEstacionDescarga(furgoneta, est, id_estacion)
+                    yield CambiarEstacionDescarga(furgoneta, est, pos_est)
             
             # IntercambiarEstacionDescarga
             for furgoneta2 in self.lista_furgonetas:
                 if furgoneta != furgoneta2:
-                    for id_estacion1 in {0, 1}:
-                        for id_estacion2 in {0, 1}:
-                            if furgoneta.coord_destinos[id_estacion1] != furgoneta2.coord_destinos[id_estacion2]:
-                                yield IntercambiarEstacionDescarga(furgoneta, furgoneta2, id_estacion1, id_estacion2)
+                    for pos_estacion1 in {0, 1}:
+                        for pos_estacion2 in {0, 1}:
+                            if furgoneta.coord_destinos[pos_estacion1] != furgoneta2.coord_destinos[pos_estacion2]:
+                                yield IntercambiarEstacionDescarga(furgoneta, furgoneta2, pos_estacion1, pos_estacion2)"""
 
-            # CambiarNumeroBicisCarga
+            """# CambiarNumeroBicisCarga
             if furgoneta.info_est_origen['disp'] > 0:
                 # Comprobamos que no haya ningua estación destino igual a la de Origen, para evitar cargar bicicletas de más en ese caso
                 if (furgoneta.origenX, furgoneta.origenY) == furgoneta.coord_destinos[0] == furgoneta.coord_destinos[1]:
@@ -109,8 +127,6 @@ class EstadoBicing(object):
                     num_max = min(30, \
                                     furgoneta.info_est_origen['disp'] if furgoneta.info_est_origen['disp'] > 0 else 0, \
                                         abs(dif_destino1) if dif_destino1 < 0 else 0)
-                    if num_max < 0:
-                        num_max = 0
                         
                     for num_bicicletas_carga in range(0, num_max + 1):
                         yield CambiarNumeroBicisCarga(furgoneta, furgoneta.info_est_origen, num_bicicletas_carga=0)
@@ -122,62 +138,76 @@ class EstadoBicing(object):
                     num_max = min(30, \
                                     furgoneta.info_est_origen['disp'] if furgoneta.info_est_origen['disp'] > 0 else 0, \
                                         abs(dif_destino1) if dif_destino1 < 0 else 0 + abs(dif_destino2) if dif_destino2 < 0 else 0)
-                    if num_max < 0:
-                        num_max = 0
 
                     for num_bicicletas_carga in range(0, num_max + 1):
-                        yield CambiarNumeroBicisCarga(furgoneta, furgoneta.info_est_origen, num_bicicletas_carga)
+                        yield CambiarNumeroBicisCarga(furgoneta, furgoneta.info_est_origen, num_bicicletas_carga)"""
     
     def apply_action(self, action: BicingOperator) -> 'EstadoBicing':
         new_state: EstadoBicing = self.copy()
-
         if isinstance(action, CambiarEstacionCarga):
-            furgoneta = new_state.lista_furgonetas[action.furgoneta.id]
-            new_estacion = {key: value for key, value in action.info_est.items()}
+            furgoneta = new_state.lista_furgonetas[action.id_furgoneta]
+            new_estacion = new_state.info_estaciones[action.id_est]
             furgoneta.set_estacion_origen(new_estacion)
-            num_bicicletas_cargadas = min(30, furgoneta.info_est_origen['disp'], \
+            num_bicicletas_cargadas = min(30, furgoneta.info_est_origen['disp'] if furgoneta.info_est_origen['disp'] > 0 else 0, \
                                            abs(furgoneta.info_est_destino[0]['dif']) if furgoneta.info_est_destino[0]['dif'] < 0 else 0 \
                                             + abs(furgoneta.info_est_destino[1]['dif']) if furgoneta.info_est_destino[1]['dif'] < 0 else 0)
-            if num_bicicletas_cargadas < 0:
-                num_bicicletas_cargadas = 0
-
             furgoneta.set_num_bicicletas_cargadas(num_bicicletas_cargadas)
-            furgoneta.realizar_ruta()
+            
+            self.realizar_ruta_furgoneta(action.id_furgoneta)
+        
+        elif isinstance(action, IntercambiarEstacionCarga):
+            furgoneta1 = new_state.lista_furgonetas[action.id_furgoneta1]
+            furgoneta2 = new_state.lista_furgonetas[action.id_furgoneta2]
+            copia_estacion_origen1 = {key: value for key, value in furgoneta1.info_est_origen.items()}
+            copia_estacion_origen2 = {key: value for key, value in furgoneta2.info_est_origen.items()}
+            furgoneta1.set_estacion_origen(copia_estacion_origen2)
+            furgoneta2.set_estacion_origen(copia_estacion_origen1)
+            num_bicicletas_cargadas1 = furgoneta1.calcular_bicicletas_carga()
+            num_bicicletas_cargadas2 = furgoneta2.calcular_bicicletas_carga()
+
+            furgoneta1.set_num_bicicletas_cargadas(num_bicicletas_cargadas1)
+            furgoneta2.set_num_bicicletas_cargadas(num_bicicletas_cargadas2)
+            
+            self.realizar_ruta_furgoneta(furgoneta1.id)
+            self.realizar_ruta_furgoneta(furgoneta2.id)
         
         elif isinstance(action, CambiarEstacionDescarga):
-            furgoneta = new_state.lista_furgonetas[action.furgoneta.id]
-            new_estacion = {key: value for key, value in action.info_est.items()}
-            if action.id_est == 0:
+            furgoneta = new_state.lista_furgonetas[action.id_furgoneta]
+            new_estacion = new_state.info_estaciones[action.id_est]
+            if action.pos_est == 0:
                 furgoneta.set_estaciones_destinos(new_estacion, furgoneta.info_est_destino[1])
             else:
                 furgoneta.set_estaciones_destinos(furgoneta.info_est_destino[0], new_estacion)
-            furgoneta.realizar_ruta()
+            
+            self.realizar_ruta_furgoneta(furgoneta.id)
     
         if isinstance(action, IntercambiarEstacionDescarga):
-            furgoneta1 = new_state.lista_furgonetas[action.furgoneta1.id]
-            furgoneta2 = new_state.lista_furgonetas[action.furgoneta2.id]
-            copia_estacion_destino1 = {key: value for key, value in furgoneta1.info_est_destino[action.id_est1].items()}
-            copia_estacion_destino2 = {key: value for key, value in furgoneta2.info_est_destino[action.id_est2].items()}
+            furgoneta1 = new_state.lista_furgonetas[action.id_furgoneta1]
+            furgoneta2 = new_state.lista_furgonetas[action.id_furgoneta2]
+            copia_estacion_destino1 = new_state.info_estaciones[action.id_furgoneta1]
+            copia_estacion_destino2 = new_state.info_estaciones[action.id_furgoneta2]   
 
-            if action.id_est1 == 0:
-                if action.id_est2 == 0:
+            if action.pos_est1 == 0:
+                if action.pos_est2 == 0:
                     furgoneta1.set_estaciones_destinos(copia_estacion_destino2, furgoneta1.info_est_destino[1])
                     furgoneta2.set_estaciones_destinos(copia_estacion_destino1, furgoneta2.info_est_destino[1])
                 else:
                     furgoneta1.set_estaciones_destinos(copia_estacion_destino2, furgoneta1.info_est_destino[1])
                     furgoneta2.set_estaciones_destinos(furgoneta2.info_est_destino[0], copia_estacion_destino1)
             else:
-                if action.id_est2 == 0:
+                if action.pos_est2 == 0:
                     furgoneta1.set_estaciones_destinos(furgoneta1.info_est_destino[0], copia_estacion_destino2)
                     furgoneta2.set_estaciones_destinos(copia_estacion_destino1, furgoneta2.info_est_destino[1])
                 else:
                     furgoneta1.set_estaciones_destinos(furgoneta1.info_est_destino[0], copia_estacion_destino2)
                     furgoneta2.set_estaciones_destinos(furgoneta2.info_est_destino[0], copia_estacion_destino1)
 
-        elif isinstance(action, CambiarNumeroBicisCarga):
-            furgoneta = new_state.lista_furgonetas[action.furgoneta.id]
-            furgoneta.set_num_bicicletas_cargadas(action.num_bicicletas_carga)
-            furgoneta.realizar_ruta()
+            self.realizar_ruta_furgoneta(furgoneta1.id)
+            self.realizar_ruta_furgoneta(furgoneta2.id)
+
+        """elif isinstance(action, CambiarNumeroBicisCarga):
+            furgoneta = new_state.lista_furgonetas[action.id_furgoneta]
+            furgoneta.set_num_bicicletas_cargadas(action.num_bicicletas_carga)"""
 
         return new_state
 
