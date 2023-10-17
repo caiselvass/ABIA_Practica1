@@ -14,31 +14,27 @@ from operators_bicing import BicingOperator, \
 from pdb import set_trace as bp
 
 class EstadoBicing(object):
-    def __init__(self, info_estaciones: list[dict], lista_furgonetas: list[Furgoneta]) -> None:
-        self.info_estaciones = info_estaciones
-        self.lista_furgonetas = lista_furgonetas
-   
-    def copy(self) -> 'EstadoBicing':
-        # Restauramos los valores por defecto de las estaciones, ya que no queremos arrastrar los cambios del estado anterior
-        new_info_estaciones: list[dict] = [{'index': index, \
+    def __init__(self, lista_furgonetas: list[Furgoneta]) -> None:
+        self.info_estaciones: list[dict] = [{'index': index, \
                                     'dif': est.num_bicicletas_next - est.demanda, \
                                     'disp': est.num_bicicletas_no_usadas} \
                                         for index, est in enumerate(params.estaciones)]
-        
-        
-        new_lista_furgonetas: list[Furgoneta] = [furgoneta.copy() for furgoneta in self.lista_furgonetas]
+        print(self.info_estaciones, 'HOLA')
+        self.lista_furgonetas = lista_furgonetas
 
-        return EstadoBicing(info_estaciones=new_info_estaciones, lista_furgonetas=new_lista_furgonetas)
+    def copy(self) -> 'EstadoBicing':
+        new_lista_furgonetas: list[Furgoneta] = [furgoneta.copy() for furgoneta in self.lista_furgonetas]
+        return EstadoBicing(lista_furgonetas=new_lista_furgonetas)
 
 
     def __eq__(self, other) -> bool:
         return isinstance(other, EstadoBicing) and self.info_estaciones == other.info_estaciones and self.lista_furgonetas == other.lista_furgonetas
 
-    def __lt__(self, other) -> bool:
+    """ def __lt__(self, other) -> bool:
         return hash(self) < hash(other)
     
     def __hash__(self) -> int:
-        return hash((self.info_estaciones, self.lista_furgonetas))
+        return hash((self.info_estaciones, self.lista_furgonetas))"""
     
     def __str__(self) -> str:
         str_rutas = ""
@@ -52,9 +48,9 @@ class EstadoBicing(object):
             num_segunda_parada = furgoneta.bicicletas_descargadas_2
 
             str_rutas += f"   * F[{furgoneta.id}]:"\
-                  + f"  C=[Coord={self.get_coords_est(furgoneta.id_est_origen)}, num={furgoneta.bicicletas_cargadas}]"\
-                      + f"  |  D1=[Coords={primera_parada}, num={num_primera_parada}]"\
-                          + f"  |  D2=[Coord={segunda_parada}, num={num_segunda_parada}]"\
+                  + f"  C=[Est({furgoneta.id_est_origen})={self.get_coords_est(furgoneta.id_est_origen)}, num={furgoneta.bicicletas_cargadas}]"\
+                      + f"  |  D1=[Est({furgoneta.id_est_dest1})={primera_parada}, num={num_primera_parada}]"\
+                          + f"  |  D2=[Est({furgoneta.id_est_dest2})={segunda_parada}, num={num_segunda_parada}]"\
                               +f"  |  KM=({km_trayecto1})+({km_trayecto2})={km_trayecto1+km_trayecto2} [{self.calcular_balance_ruta_furgoneta(furgoneta.id)}€]\n"
 
         return f"\n\nRUTAS CALCULADAS:\n{str_rutas}"
@@ -64,9 +60,13 @@ class EstadoBicing(object):
 
     def realizar_ruta(self, id_furgoneta: int) -> float:
         furgoneta = self.lista_furgonetas[id_furgoneta]
-
+         
         # Calculamos el número de bicicletas que se cargarán y descargarán
         self.asignar_bicicletas_carga_descarga(id_furgoneta)
+
+        print('\n\n\nNOU MOVIMENT')
+        print(f'ESTACIO CARGA {furgoneta.id_est_origen} ESTACIO1 {furgoneta.id_est_dest1} ESTACIO2 {furgoneta.id_est_dest2}')
+        print(f'olf inf: {self.info_estaciones}')
 
         # Actalizamos los valores de diferencia y disponibilidad
         self.info_estaciones[furgoneta.id_est_origen]['dif'] -= furgoneta.bicicletas_cargadas
@@ -77,6 +77,9 @@ class EstadoBicing(object):
 
         self.info_estaciones[furgoneta.id_est_dest2]['dif'] += furgoneta.bicicletas_descargadas_2
         self.info_estaciones[furgoneta.id_est_dest2]['disp'] += furgoneta.bicicletas_descargadas_2
+
+
+        print(f'new inf: {self.info_estaciones}')
     
     def asignar_bicicletas_carga_descarga(self, id_furgoneta: int) -> None:
         furgoneta = self.lista_furgonetas[id_furgoneta]
@@ -141,6 +144,7 @@ class EstadoBicing(object):
     def calcular_balance_total(self) -> float:
         balance_rutas = self.calcular_balance_rutas()
         balance_estaciones = self.calcular_balance_estaciones()
+        print(f'BALANCE RUTAS: {balance_rutas}, BALANCE ESTACIONES: {balance_estaciones} TOTAL MOVIMENT: {balance_estaciones + balance_rutas}')
         return balance_rutas + balance_estaciones
 
     def heuristic(self) -> float:
@@ -159,44 +163,46 @@ class EstadoBicing(object):
             
             # CambiarEstacionCarga ###############################################################################
             for est in self.info_estaciones:
-                if est['index'] not in estaciones_carga:
+                if est['index'] not in estaciones_carga and est['index'] != furgoneta.id_est_dest1 and est['index'] != furgoneta.id_est_dest2:
                     yield CambiarEstacionCarga(id_furgoneta=furgoneta.id, \
                                                id_est=est['index'])
             
-            # IntercambiarEstacionCarga ##########################################################################
+            """# IntercambiarEstacionCarga ##########################################################################
             for furgoneta2 in self.lista_furgonetas:
-                if furgoneta.id <= furgoneta2.id: # Para evitar que se repitan los intercambios
-                        yield IntercambiarEstacionCarga(id_furgoneta1=furgoneta.id, id_furgoneta2=furgoneta2.id)
+                if furgoneta.id < furgoneta2.id: # Para evitar que se repitan los intercambios
+                    yield IntercambiarEstacionCarga(id_furgoneta1=furgoneta.id, id_furgoneta2=furgoneta2.id)
             
             # CambiarOrdenDescarga ###############################################################################
             yield CambiarOrdenDescarga(id_furgoneta=furgoneta.id)
 
             # CambiarEstacionDescarga ############################################################################
             for est in self.info_estaciones:
-                for pos_est in {0, 1}:
-                    # No hacemos comprobación de que la nueva estación de descarga sea distinta a la anterior porque este 
-                    # caso ya se trata en el método asignar_bicicletas_carga_descarga()
-                    yield CambiarEstacionDescarga(id_furgoneta=furgoneta.id, \
-                                                id_est=est['index'], \
-                                                    pos_est=pos_est)
+                if est['index'] != furgoneta.id_est_origen:
+                    for pos_est in {0, 1}:
+                        # No hacemos comprobación de que la nueva estación de descarga sea distinta a la anterior porque este 
+                        # caso ya se trata en el método asignar_bicicletas_carga_descarga()
+                        yield CambiarEstacionDescarga(id_furgoneta=furgoneta.id, \
+                                                    id_est=est['index'], \
+                                                        pos_est=pos_est)
                 
             # IntercambiarEstacionDescarga #######################################################################
             for furgoneta2 in self.lista_furgonetas:
-                if furgoneta.id <= furgoneta2.id: # Para evitar que se repitan los intercambios
+                if furgoneta.id < furgoneta2.id: # Para evitar que se repitan los intercambios
                     f_est_destinos = (furgoneta.id_est_dest1, furgoneta.id_est_dest2)
                     f2_est_destinos = (furgoneta2.id_est_dest1, furgoneta2.id_est_dest2)
                     for pos_est1 in {0, 1}:
                         for pos_est2 in {0, 1}:
-                            if self.get_coords_est(f_est_destinos[pos_est1]) != self.get_coords_est(f2_est_destinos[pos_est2]):
+                            if self.get_coords_est(f_est_destinos[pos_est1]) != self.get_coords_est(f2_est_destinos[pos_est2]): # Para no intercambiar la misma estación
                                 id_estacion1 = f_est_destinos[pos_est1]
                                 id_estacion2 = f2_est_destinos[pos_est2]
-                                yield IntercambiarEstacionDescarga(id_furgoneta1=furgoneta.id, id_furgoneta2=furgoneta2.id, \
-                                                                   id_est1=id_estacion1, id_est2=id_estacion2, \
-                                                                    pos_est1=pos_est1, pos_est2=pos_est2)
+                                if id_estacion2 != furgoneta.id_est_origen and id_estacion1 != furgoneta2.id_est_origen:
+                                    yield IntercambiarEstacionDescarga(id_furgoneta1=furgoneta.id, id_furgoneta2=furgoneta2.id, \
+                                                                    id_est1=id_estacion1, id_est2=id_estacion2, \
+                                                                        pos_est1=pos_est1, pos_est2=pos_est2)
             
             # QuitarEstacionDescarga #############################################################################
             for pos_est in {0, 1}:
-                yield QuitarEstacionDescarga(id_furgoneta=furgoneta.id, pos_est=pos_est)
+                yield QuitarEstacionDescarga(id_furgoneta=furgoneta.id, pos_est=pos_est)"""
     
     def apply_action(self, action: BicingOperator) -> 'EstadoBicing':
         new_state: EstadoBicing = self.copy()

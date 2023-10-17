@@ -12,5 +12,6 @@ class Parameters:
 	def __repr__(self) -> str:
 		return f"Params(n_estaciones={self.n_estaciones}, n_bicicletas={self.n_bicicletas}, n_furgonetas={self.n_furgonetas}, seed={self.seed})"
 
+params = Parameters(n_estaciones=5, n_bicicletas=250, n_furgonetas=1, seed=42)
 
-params = Parameters(n_estaciones=25, n_bicicletas=1250, n_furgonetas=5, seed=42)
+

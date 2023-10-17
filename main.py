@@ -57,6 +57,8 @@ def generate_initial_state(greedy: bool = False, semilla: Union[int, None] = Non
             elif est['dif'] > 0 and est['disp'] > 0:
                 lista_est_excedente.append(est['index'])
         
+        print(lista_est_excedente)
+        print(lista_est_faltante)
         n_estaciones_origen = len(lista_est_excedente)
         n_estaciones_destino = len(lista_est_faltante)
                 
@@ -67,16 +69,16 @@ def generate_initial_state(greedy: bool = False, semilla: Union[int, None] = Non
                 id_est_o = rng.randint(0, n_estaciones_origen - 1)
             est_con_furgoneta.add(id_est_o)
 
-            furgoneta.id_est_origen = id_est_o
+            furgoneta.id_est_origen = lista_est_excedente[id_est_o]
         
             # Asignamos las estaciones de destino a la furgoneta
             id_est_d1 = rng.randint(0, n_estaciones_destino - 1)
             id_est_d2 = rng.randint(0, n_estaciones_destino - 1)
 
-            furgoneta.id_est_dest1 = id_est_d1
-            furgoneta.id_est_dest2 = id_est_d2
+            furgoneta.id_est_dest1 = lista_est_faltante[id_est_d1]
+            furgoneta.id_est_dest2 = lista_est_faltante[id_est_d2]
                 
-    state = EstadoBicing(info_estaciones=info_estaciones, lista_furgonetas=lista_furgonetas)
+    state = EstadoBicing(lista_furgonetas=lista_furgonetas)
     return state
     
 # Programa principal
@@ -121,14 +123,14 @@ if __name__ == '__main__':
           #(acum_bicicletas, acum_demanda, acum_disponibles, acum_necesarias))
     
     # Experimento
-    initial_state: EstadoBicing = generate_initial_state(greedy=True)
+    initial_state: EstadoBicing = generate_initial_state(greedy=True, semilla=46)
+    initial_state.heuristic()
     initial_state.print_state(inicial=True)
-    initial_state.visualize_state(manhattan = True)
+    #initial_state.visualize_state(manhattan = True)
 
     problema_bicing = ProblemaBicing(initial_state)
     final_solution = hill_climbing(problema_bicing)
     final_solution.print_state()
     print("SOLUCIONES COMPROBADAS:", problema_bicing.solutions_checked, "\n")
-    final_solution.visualize_state(manhattan = True)
-
+    #final_solution.visualize_state(manhattan = True)
 

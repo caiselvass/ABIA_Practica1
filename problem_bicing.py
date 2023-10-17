@@ -12,13 +12,13 @@ class ProblemaBicing(Problem):
         return state.generate_actions()
 
     def result(self, state: EstadoBicing, action) -> EstadoBicing:
-        self.solutions_checked += 1
         return state.apply_action(action)
 
     def path_cost(self, c, state1, action, state2) -> int:
         return c + 1
     
     def value(self, state: EstadoBicing) -> float:
+        self.solutions_checked += 1
         return state.heuristic()
     
     def goal_test(self, state: EstadoBicing) -> bool:

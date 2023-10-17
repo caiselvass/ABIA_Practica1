@@ -27,8 +27,8 @@ class Furgoneta(object):
                                 and self.bicicletas_descargadas_2 == other.bicicletas_descargadas_2
 
     def __repr__(self) -> str:
-        return f"F {self.id}: {self.id_est_origen} -> {self.id_est_dest1} -> {self.id_est_dest2} ({self.bicicletas_descargadas_1}, {self.bicicletas_descargadas_2})"
-    
+        return f"F[{self.id}]: C={self.id_est_origen} (num={self.bicicletas_cargadas}) | D1={self.id_est_dest1} (num={self.bicicletas_descargadas_1}) | D2={self.id_est_dest2} (num={self.bicicletas_descargadas_2})"
+
     def copy(self) -> 'Furgoneta':
         return Furgoneta(self.id, \
                          self.id_est_origen, \
