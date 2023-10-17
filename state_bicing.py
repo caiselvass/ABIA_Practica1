@@ -15,7 +15,6 @@ from pdb import set_trace as bp
 
 class EstadoBicing(object):
     def __init__(self, lista_furgonetas: list[Furgoneta]) -> None:
-
         self.info_estaciones: list[dict] = [{'index': index, \
                                     'dif': est.num_bicicletas_next - est.demanda, \
                                     'disp': est.num_bicicletas_no_usadas} \
@@ -25,7 +24,6 @@ class EstadoBicing(object):
     def copy(self) -> 'EstadoBicing':
         new_lista_furgonetas: list[Furgoneta] = [furgoneta.copy() for furgoneta in self.lista_furgonetas]
         return EstadoBicing(lista_furgonetas=new_lista_furgonetas)
-
 
     def __eq__(self, other) -> bool:
         return isinstance(other, EstadoBicing) and self.info_estaciones == other.info_estaciones and self.lista_furgonetas == other.lista_furgonetas
@@ -57,6 +55,12 @@ class EstadoBicing(object):
     
     def get_coords_est(self, id_est) -> tuple:
         return (params.estaciones[id_est].coordX, params.estaciones[id_est].coordY)
+    
+    def __restaurar_estaciones(self) -> None:
+        self.info_estaciones: list[dict] = [{'index': index, \
+                    'dif': est.num_bicicletas_next - est.demanda, \
+                    'disp': est.num_bicicletas_no_usadas} \
+                        for index, est in enumerate(params.estaciones)]
 
     def realizar_ruta(self, id_furgoneta: int) -> float:
         furgoneta = self.lista_furgonetas[id_furgoneta]
@@ -148,10 +152,7 @@ class EstadoBicing(object):
         return balance_rutas + balance_estaciones
 
     def heuristic(self) -> float:
-        self.info_estaciones: list[dict] = [{'index': index, \
-                    'dif': est.num_bicicletas_next - est.demanda, \
-                    'disp': est.num_bicicletas_no_usadas} \
-                        for index, est in enumerate(params.estaciones)]
+        self.__restaurar_estaciones()
         for furgoneta in self.lista_furgonetas:
             self.realizar_ruta(furgoneta.id)
         return self.calcular_balance_total()
@@ -282,14 +283,17 @@ class EstadoBicing(object):
         # Colores
         WHITE = (255, 255, 255)
         GRAY = (230, 230, 230)
-        VARIANT_BLUE = (0, 0, 25)
-        RED = (200, 0, 0)
+        BLACK = (0, 0, 0)
+        CYAN = (0, 255, 255)
         BLUE = (50, 100, 255)
+        PURPLE = (135, 0, 170)
+        PINK = (255, 175, 240)
+
+        LIST_COLORS = [BLACK, BLUE, PURPLE, PINK, CYAN]
+
+        RED = (200, 0, 0)
         YELLOW = (255, 200, 0)
         GREEN = (0, 200, 0)
-        BLACK = (0, 0, 0)
-
-        VARIANT_STEP = int(230 / params.n_furgonetas)
 
         # Tamaño de la ciudad en metros
         CITY_SIZE = 10000
@@ -337,16 +341,16 @@ class EstadoBicing(object):
                     pygame.draw.circle(screen, BLACK, (scale(station[0]), scale(station[1])), 4)
 
                 # Diferencia de la estación
-                number = str(self.info_estaciones[id_est]['dif'])
+                number = str(f"E{id_est}({self.info_estaciones[id_est]['dif']})")
 
                 # Crea una fuente
-                font = pygame.font.Font(None, 24)
+                font = pygame.font.Font(None, 15)
                 
                 # Renderiza el número
                 text_surface = font.render(number, True, (0, 0, 0))
                 
                 # Dibuja el número debajo de la estación
-                screen.blit(text_surface, (scale(station[0]) - 10, scale(station[1]) + 8))  # -10 y +8 son offsets para centrar y mover debajo del círculo
+                screen.blit(text_surface, (scale(station[0]) - 15, scale(station[1]) + 8))  # -10 y +8 son offsets para centrar y mover debajo del círculo
 
         def draw_manhattan_path(start, end, color):
             x1, y1 = start
@@ -363,17 +367,15 @@ class EstadoBicing(object):
             pygame.draw.line(screen, color, (scale(x1), scale(y1)), (scale(x2), scale(y2)), 3)
 
         def draw_vans(vans, manhattan):
-            nonlocal VARIANT_BLUE
-            VARIANT_BLUE = (VARIANT_BLUE[0], VARIANT_BLUE[1], VARIANT_BLUE[2] - VARIANT_STEP)
-            for van in vans:
-                VARIANT_BLUE = (VARIANT_BLUE[0] + int(VARIANT_STEP*0.2), VARIANT_BLUE[1] + int(VARIANT_STEP*0.6), VARIANT_BLUE[2] + VARIANT_STEP)
+            for i, van in enumerate(vans):
+                COLOR = LIST_COLORS[i % len(LIST_COLORS)]
                 start, stop1, stop2 = van
                 if manhattan:
-                    draw_manhattan_path(start, stop1, VARIANT_BLUE)
-                    draw_manhattan_path(stop1, stop2, VARIANT_BLUE)
+                    draw_manhattan_path(start, stop1, COLOR)
+                    draw_manhattan_path(stop1, stop2, COLOR)
                 else:
-                    draw_euclidean_path(start, stop1, VARIANT_BLUE)
-                    draw_euclidean_path(stop1, stop2, VARIANT_BLUE)
+                    draw_euclidean_path(start, stop1, COLOR)
+                    draw_euclidean_path(stop1, stop2, COLOR)
 
 
         # Crear estaciones y rutas de furgonetas aleatoriamente
@@ -394,7 +396,6 @@ class EstadoBicing(object):
             draw_stations(stations, vans)
             draw_vans(vans, manhattan)
             pygame.display.flip()
-            VARIANT_BLUE = (0, 0, 25)
 
         pygame.quit()
 
