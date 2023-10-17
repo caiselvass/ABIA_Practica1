@@ -237,11 +237,11 @@ class EstadoBicing(object):
                     furgoneta1.id_est_dest2, furgoneta2.id_est_dest2 = furgoneta2.id_est_dest2, furgoneta1.id_est_dest2
 
         elif isinstance(action, QuitarEstacionDescarga):
-            pass
-
-        """elif isinstance(action, CambiarNumeroBicisCarga):
             furgoneta = new_state.lista_furgonetas[action.id_furgoneta]
-            furgoneta.set_num_bicicletas_cargadas(action.num_bicicletas_carga)"""
+            if action.pos_est == 0:
+                furgoneta.id_est_dest1 = furgoneta.id_est_origen
+            else:
+                furgoneta.id_est_dest2 = furgoneta.id_est_dest1
 
         return new_state
 
@@ -324,7 +324,7 @@ class EstadoBicing(object):
                 if station not in printed_origins and station not in printed_destinations:            
                     pygame.draw.circle(screen, BLACK, (scale(station[0]), scale(station[1])), 4)
 
-                # Genera un número aleatorio
+                # Diferencia de la estación
                 number = str(self.info_estaciones[id_est]['dif'])
 
                 # Crea una fuente
@@ -419,6 +419,11 @@ if furgoneta.info_est_origen['disp'] > 0:
             yield CambiarNumeroBicisCarga(furgoneta, furgoneta.info_est_origen, num_bicicletas_carga)
 
 """
+
+
+"""elif isinstance(action, CambiarNumeroBicisCarga):
+    furgoneta = new_state.lista_furgonetas[action.id_furgoneta]
+    furgoneta.set_num_bicicletas_cargadas(action.num_bicicletas_carga)"""
         
 
 """def realizar_ruta2(self, id_furgoneta: int) -> float:

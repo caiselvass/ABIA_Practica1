@@ -45,8 +45,8 @@ class QuitarEstacionDescarga(BicingOperator):
         self.pos_est = pos_est
 
 
-class CambiarNumeroBicisCarga(BicingOperator):
+"""class CambiarNumeroBicisCarga(BicingOperator):
     def __init__(self, id_furgoneta: int, id_est: int, bicicletas_carga: int) -> None:
         self.id_furgoneta = id_furgoneta
         self.id_est = id_est
-        self.bicicletas_carga = bicicletas_carga
+        self.bicicletas_carga = bicicletas_carga"""

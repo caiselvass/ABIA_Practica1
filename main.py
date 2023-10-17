@@ -121,8 +121,7 @@ if __name__ == '__main__':
           #(acum_bicicletas, acum_demanda, acum_disponibles, acum_necesarias))
     
     # Experimento
-    initial_state: EstadoBicing = generate_initial_state(greedy=False)
-    #initial_state.heuristic()
+    initial_state: EstadoBicing = generate_initial_state(greedy=True)
     initial_state.print_state(inicial=True)
     initial_state.visualize_state(manhattan = True)
 
