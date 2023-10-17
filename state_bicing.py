@@ -17,9 +17,6 @@ class EstadoBicing(object):
     def __init__(self, info_estaciones: list[dict], lista_furgonetas: list[Furgoneta]) -> None:
         self.info_estaciones = info_estaciones
         self.lista_furgonetas = lista_furgonetas
-        self.balances_rutas: list[float] = [0 for _ in range(params.n_furgonetas)]
-        self.balance_estaciones: float = 0
-        self.balance_total: float = 0
    
     def copy(self) -> 'EstadoBicing':
         # Restauramos los valores por defecto de las estaciones, ya que no queremos arrastrar los cambios del estado anterior
@@ -58,7 +55,7 @@ class EstadoBicing(object):
                   + f"  C=[Coord={self.get_coords_est(furgoneta.id_est_origen)}, num={furgoneta.bicicletas_cargadas}]"\
                       + f"  |  D1=[Coords={primera_parada}, num={num_primera_parada}]"\
                           + f"  |  D2=[Coord={segunda_parada}, num={num_segunda_parada}]"\
-                              +f"  |  KM=({km_trayecto1})+({km_trayecto2})={km_trayecto1+km_trayecto2} [{self.balances_rutas[furgoneta.id]}€]\n"
+                              +f"  |  KM=({km_trayecto1})+({km_trayecto2})={km_trayecto1+km_trayecto2} [{self.calcular_balance_ruta_furgoneta(furgoneta.id)}€]\n"
 
         return f"\n\nRUTAS CALCULADAS:\n{str_rutas}"
     
@@ -68,31 +65,18 @@ class EstadoBicing(object):
     def realizar_ruta(self, id_furgoneta: int) -> float:
         furgoneta = self.lista_furgonetas[id_furgoneta]
 
+        # Calculamos el número de bicicletas que se cargarán y descargarán
         self.asignar_bicicletas_carga_descarga(id_furgoneta)
-    
-        carga = furgoneta.bicicletas_cargadas
-
-        descarga1 = furgoneta.bicicletas_descargadas_1
-        descarga2 = furgoneta.bicicletas_descargadas_2
-        distancia_a_b = distancia_manhattan(self.get_coords_est(furgoneta.id_est_origen), self.get_coords_est(furgoneta.id_est_dest1)) / 1000
-        distancia_b_c = distancia_manhattan(self.get_coords_est(furgoneta.id_est_dest1), self.get_coords_est(furgoneta.id_est_dest2)) / 1000
 
         # Actalizamos los valores de diferencia y disponibilidad
-        self.info_estaciones[furgoneta.id_est_origen]['dif'] -= carga
-        self.info_estaciones[furgoneta.id_est_origen]['disp'] -= carga
+        self.info_estaciones[furgoneta.id_est_origen]['dif'] -= furgoneta.bicicletas_cargadas
+        self.info_estaciones[furgoneta.id_est_origen]['disp'] -= furgoneta.bicicletas_cargadas
 
-        self.info_estaciones[furgoneta.id_est_dest1]['dif'] += descarga1
-        self.info_estaciones[furgoneta.id_est_dest1]['disp'] += descarga1
+        self.info_estaciones[furgoneta.id_est_dest1]['dif'] += furgoneta.bicicletas_descargadas_1
+        self.info_estaciones[furgoneta.id_est_dest1]['disp'] += furgoneta.bicicletas_descargadas_1
 
-        self.info_estaciones[furgoneta.id_est_dest2]['dif'] += descarga2
-        self.info_estaciones[furgoneta.id_est_dest2]['disp'] += descarga2
-
-        # Calculamos costes
-        coste_a_b = ((carga + 9) // 10) * distancia_a_b
-        coste_b_c = ((descarga2 + 9) // 10) * distancia_b_c
-        
-        self.balances_rutas[id_furgoneta] = -(coste_a_b + coste_b_c)
-        return -(coste_a_b + coste_b_c)
+        self.info_estaciones[furgoneta.id_est_dest2]['dif'] += furgoneta.bicicletas_descargadas_2
+        self.info_estaciones[furgoneta.id_est_dest2]['disp'] += furgoneta.bicicletas_descargadas_2
     
     def asignar_bicicletas_carga_descarga(self, id_furgoneta: int) -> None:
         furgoneta = self.lista_furgonetas[id_furgoneta]
@@ -112,12 +96,30 @@ class EstadoBicing(object):
         furgoneta.bicicletas_cargadas = bicicletas_carga
         furgoneta.bicicletas_descargadas_1 = bicicletas_descarga_1
         furgoneta.bicicletas_descargadas_2 = bicicletas_descarga_2
+
+    def calcular_balance_ruta_furgoneta(self, id_furgoneta: int) -> float:
+        furgoneta = self.lista_furgonetas[id_furgoneta]
+        
+
+        carga = furgoneta.bicicletas_cargadas
+        descarga1 = furgoneta.bicicletas_descargadas_1
+        descarga2 = furgoneta.bicicletas_descargadas_2
+
+        assert carga == descarga1 + descarga2, "El número de bicicletas cargadas no coincide con el número de bicicletas descargadas"
+
+        distancia_a_b = distancia_manhattan(self.get_coords_est(furgoneta.id_est_origen), self.get_coords_est(furgoneta.id_est_dest1)) / 1000
+        distancia_b_c = distancia_manhattan(self.get_coords_est(furgoneta.id_est_dest1), self.get_coords_est(furgoneta.id_est_dest2)) / 1000
+
+        coste_a_b = ((carga + 9) // 10) * distancia_a_b
+        coste_b_c = ((descarga2 + 9) // 10) * distancia_b_c
+        
+        return -(coste_a_b + coste_b_c)
     
     def calcular_balance_rutas(self) -> float:
         balance_rutas = 0
         #Calcular el balance de todas las rutas
         for furgoneta in self.lista_furgonetas:
-            balance_rutas += self.realizar_ruta(furgoneta.id)
+            balance_rutas += self.calcular_balance_ruta_furgoneta(furgoneta.id)
         return balance_rutas
 
     def calcular_balance_estaciones(self) -> int:
@@ -134,16 +136,16 @@ class EstadoBicing(object):
                 else:
                     balance_estaciones += diferencia_final - diferencia_inicial
             
-        self.balance_estaciones = balance_estaciones
         return balance_estaciones
     
     def calcular_balance_total(self) -> float:
         balance_rutas = self.calcular_balance_rutas()
         balance_estaciones = self.calcular_balance_estaciones()
-        self.balance_total = balance_rutas + balance_estaciones
         return balance_rutas + balance_estaciones
 
     def heuristic(self) -> float:
+        for furgoneta in self.lista_furgonetas:
+            self.realizar_ruta(furgoneta.id)
         return self.calcular_balance_total()
         
     def generate_actions(self) -> Generator:
@@ -250,9 +252,9 @@ class EstadoBicing(object):
         else:
             str_balances += f"\n{'*'*35 + ' [ SOLUCIÓN FINAL ] ' + '*'*35}\n"
         
-        str_balances += f"\nBALANCE RUTAS: {sum(self.balances_rutas)}\n" + \
-                    f"BALANCE ESTACIONES: {self.balance_estaciones}\n" + \
-                        f"BALANCE TOTAL: {self.balance_total}"
+        str_balances += f"\nBALANCE RUTAS: {self.calcular_balance_rutas()}\n" + \
+                    f"BALANCE ESTACIONES: {self.calcular_balance_estaciones()}\n" + \
+                        f"BALANCE TOTAL: {self.calcular_balance_total()}"
         
         print(str_balances + self.__str__())
 
@@ -267,7 +269,7 @@ class EstadoBicing(object):
 
         # Colores
         WHITE = (255, 255, 255)
-        GRAY = (200, 200, 200)
+        GRAY = (230, 230, 230)
         VARIANT_BLUE = (0, 0, 25)
         RED = (200, 0, 0)
         BLUE = (50, 100, 255)
@@ -295,11 +297,14 @@ class EstadoBicing(object):
         def draw_stations(stations, vans):
             printed_origins = set()
             printed_destinations = set()
-            for van in vans:
-                est_origen, est_destino1, est_destino2 = van
 
+            for van in vans:
+                est_origen = van[0]
                 pygame.draw.circle(screen, GREEN, (scale(est_origen[0]), scale(est_origen[1])), 6)
                 printed_origins.add(est_origen)
+            
+            for van in vans:
+                est_destino1, est_destino2 = van[1], van[2]
                 
                 if est_destino1 not in printed_origins:
                     pygame.draw.circle(screen, RED, (scale(est_destino1[0]), scale(est_destino1[1])), 6)
@@ -349,7 +354,7 @@ class EstadoBicing(object):
             nonlocal VARIANT_BLUE
             VARIANT_BLUE = (VARIANT_BLUE[0], VARIANT_BLUE[1], VARIANT_BLUE[2] - VARIANT_STEP)
             for van in vans:
-                VARIANT_BLUE = (VARIANT_BLUE[0] + int(VARIANT_STEP*0.25), VARIANT_BLUE[1] + int(VARIANT_STEP*0.75), VARIANT_BLUE[2] + VARIANT_STEP)
+                VARIANT_BLUE = (VARIANT_BLUE[0] + int(VARIANT_STEP*0.2), VARIANT_BLUE[1] + int(VARIANT_STEP*0.6), VARIANT_BLUE[2] + VARIANT_STEP)
                 start, stop1, stop2 = van
                 if manhattan:
                     draw_manhattan_path(start, stop1, VARIANT_BLUE)

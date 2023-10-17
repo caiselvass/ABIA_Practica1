@@ -121,14 +121,15 @@ if __name__ == '__main__':
           #(acum_bicicletas, acum_demanda, acum_disponibles, acum_necesarias))
     
     # Experimento
-    initial_state: EstadoBicing = generate_initial_state(greedy=True)
+    initial_state: EstadoBicing = generate_initial_state(greedy=False)
     #initial_state.heuristic()
     initial_state.print_state(inicial=True)
-    initial_state.visualize_state(manhattan = False)
+    initial_state.visualize_state(manhattan = True)
 
     problema_bicing = ProblemaBicing(initial_state)
     final_solution = hill_climbing(problema_bicing)
     final_solution.print_state()
-    final_solution.visualize_state(manhattan = False)
     print("SOLUCIONES COMPROBADAS:", problema_bicing.solutions_checked, "\n")
+    final_solution.visualize_state(manhattan = True)
+
 
