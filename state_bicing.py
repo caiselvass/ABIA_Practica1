@@ -2,12 +2,14 @@ from furgoneta_bicing import Furgoneta
 from parameters_bicing import params
 from functions_bicing import distancia_manhattan
 from typing import Generator
+import pygame
 from operators_bicing import BicingOperator, \
     CambiarEstacionCarga, \
         IntercambiarEstacionCarga, \
             CambiarOrdenDescarga, \
                 CambiarEstacionDescarga, \
-                    IntercambiarEstacionDescarga
+                    IntercambiarEstacionDescarga, \
+                        QuitarEstacionDescarga
 
 from pdb import set_trace as bp
 
@@ -25,6 +27,7 @@ class EstadoBicing(object):
                                     'dif': est.num_bicicletas_next - est.demanda, \
                                     'disp': est.num_bicicletas_no_usadas} \
                                         for index, est in enumerate(params.estaciones)]
+        
         
         new_lista_furgonetas: list[Furgoneta] = [furgoneta.copy() for furgoneta in self.lista_furgonetas]
 
@@ -64,8 +67,9 @@ class EstadoBicing(object):
 
     def realizar_ruta(self, id_furgoneta: int) -> float:
         furgoneta = self.lista_furgonetas[id_furgoneta]
+
         self.asignar_bicicletas_carga_descarga(id_furgoneta)
-        
+    
         carga = furgoneta.bicicletas_cargadas
 
         descarga1 = furgoneta.bicicletas_descargadas_1
@@ -89,7 +93,7 @@ class EstadoBicing(object):
         
         self.balances_rutas[id_furgoneta] = -(coste_a_b + coste_b_c)
         return -(coste_a_b + coste_b_c)
-
+    
     def asignar_bicicletas_carga_descarga(self, id_furgoneta: int) -> None:
         furgoneta = self.lista_furgonetas[id_furgoneta]
         est_origen = self.info_estaciones[furgoneta.id_est_origen]
@@ -187,6 +191,10 @@ class EstadoBicing(object):
                                 yield IntercambiarEstacionDescarga(id_furgoneta1=furgoneta.id, id_furgoneta2=furgoneta2.id, \
                                                                    id_est1=id_estacion1, id_est2=id_estacion2, \
                                                                     pos_est1=pos_est1, pos_est2=pos_est2)
+            
+            # QuitarEstacionDescarga #############################################################################
+            for pos_est in {0, 1}:
+                yield QuitarEstacionDescarga(id_furgoneta=furgoneta.id, pos_est=pos_est)
     
     def apply_action(self, action: BicingOperator) -> 'EstadoBicing':
         new_state: EstadoBicing = self.copy()
@@ -226,6 +234,9 @@ class EstadoBicing(object):
                 else:
                     furgoneta1.id_est_dest2, furgoneta2.id_est_dest2 = furgoneta2.id_est_dest2, furgoneta1.id_est_dest2
 
+        elif isinstance(action, QuitarEstacionDescarga):
+            pass
+
         """elif isinstance(action, CambiarNumeroBicisCarga):
             furgoneta = new_state.lista_furgonetas[action.id_furgoneta]
             furgoneta.set_num_bicicletas_cargadas(action.num_bicicletas_carga)"""
@@ -244,6 +255,131 @@ class EstadoBicing(object):
                         f"BALANCE TOTAL: {self.balance_total}"
         
         print(str_balances + self.__str__())
+
+    def visualize_state(self, manhattan: bool = True) -> None:
+        # Inicializar pygame
+        pygame.init()
+
+        # Dimensiones de la ventana
+        WIDTH, HEIGHT = 800, 800
+        screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        pygame.display.set_caption('Ciudad con estaciones y furgonetas')
+
+        # Colores
+        WHITE = (255, 255, 255)
+        GRAY = (200, 200, 200)
+        VARIANT_BLUE = (0, 0, 25)
+        RED = (200, 0, 0)
+        BLUE = (50, 100, 255)
+        YELLOW = (255, 200, 0)
+        GREEN = (0, 200, 0)
+        BLACK = (0, 0, 0)
+
+        VARIANT_STEP = int(230 / params.n_furgonetas)
+
+        # Tamaño de la ciudad en metros
+        CITY_SIZE = 10000
+
+        # Escalar coordenadas de metros a pixels
+        def scale(coord):
+            return int(coord * (WIDTH / CITY_SIZE))
+
+        # Dibujar la ciudad
+        def draw_city():
+            # Dibujar las calles
+            for i in range(0, CITY_SIZE, 100):
+                pygame.draw.line(screen, GRAY, (scale(i), 0), (scale(i), HEIGHT))
+                pygame.draw.line(screen, GRAY, (0, scale(i)), (WIDTH, scale(i)))
+
+        # Dibujar estaciones de bicicletas
+        def draw_stations(stations, vans):
+            printed_origins = set()
+            printed_destinations = set()
+            for van in vans:
+                est_origen, est_destino1, est_destino2 = van
+
+                pygame.draw.circle(screen, GREEN, (scale(est_origen[0]), scale(est_origen[1])), 6)
+                printed_origins.add(est_origen)
+                
+                if est_destino1 not in printed_origins:
+                    pygame.draw.circle(screen, RED, (scale(est_destino1[0]), scale(est_destino1[1])), 6)
+                    printed_destinations.add(est_destino1)
+                elif est_destino1 not in printed_destinations:
+                    pygame.draw.circle(screen, YELLOW, (scale(est_destino1[0]), scale(est_destino1[1])), 6)
+                    printed_destinations.add(est_destino1)
+                
+                if est_destino2 not in printed_origins:
+                    pygame.draw.circle(screen, RED, (scale(est_destino2[0]), scale(est_destino2[1])), 6)
+                    printed_destinations.add(est_destino2)
+                elif est_destino2 not in printed_destinations:
+                    pygame.draw.circle(screen, YELLOW, (scale(est_destino2[0]), scale(est_destino2[1])), 6)
+                    printed_destinations.add(est_destino2)
+
+            for id_est, station in enumerate(stations):
+                if station not in printed_origins and station not in printed_destinations:            
+                    pygame.draw.circle(screen, BLACK, (scale(station[0]), scale(station[1])), 4)
+
+                # Genera un número aleatorio
+                number = str(self.info_estaciones[id_est]['dif'])
+
+                # Crea una fuente
+                font = pygame.font.Font(None, 24)
+                
+                # Renderiza el número
+                text_surface = font.render(number, True, (0, 0, 0))
+                
+                # Dibuja el número debajo de la estación
+                screen.blit(text_surface, (scale(station[0]) - 10, scale(station[1]) + 8))  # -10 y +8 son offsets para centrar y mover debajo del círculo
+
+        def draw_manhattan_path(start, end, color):
+            x1, y1 = start
+            x2, y2 = end
+            
+            # Dibuja una línea horizontal desde el punto de inicio al punto final (pero manteniendo la coordenada y del inicio)
+            pygame.draw.line(screen, color, (scale(x1), scale(y1)), (scale(x2), scale(y1)), 3)
+            # Dibuja una línea vertical desde el final de la línea anterior hasta el punto final
+            pygame.draw.line(screen, color, (scale(x2), scale(y1)), (scale(x2), scale(y2)), 3)
+
+        def draw_euclidean_path(start, end, color):
+            x1, y1 = start
+            x2, y2 = end
+            pygame.draw.line(screen, color, (scale(x1), scale(y1)), (scale(x2), scale(y2)), 3)
+
+        def draw_vans(vans, manhattan):
+            nonlocal VARIANT_BLUE
+            VARIANT_BLUE = (VARIANT_BLUE[0], VARIANT_BLUE[1], VARIANT_BLUE[2] - VARIANT_STEP)
+            for van in vans:
+                VARIANT_BLUE = (VARIANT_BLUE[0] + int(VARIANT_STEP*0.25), VARIANT_BLUE[1] + int(VARIANT_STEP*0.75), VARIANT_BLUE[2] + VARIANT_STEP)
+                start, stop1, stop2 = van
+                if manhattan:
+                    draw_manhattan_path(start, stop1, VARIANT_BLUE)
+                    draw_manhattan_path(stop1, stop2, VARIANT_BLUE)
+                else:
+                    draw_euclidean_path(start, stop1, VARIANT_BLUE)
+                    draw_euclidean_path(stop1, stop2, VARIANT_BLUE)
+
+
+        # Crear estaciones y rutas de furgonetas aleatoriamente
+        stations = [(est.coordX, est.coordY) for est in params.estaciones]
+
+        vans = [(self.get_coords_est(furgoneta.id_est_origen),
+                self.get_coords_est(furgoneta.id_est_dest1),
+                self.get_coords_est(furgoneta.id_est_dest2)) for furgoneta in self.lista_furgonetas]
+
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+            screen.fill(WHITE)
+            draw_city()
+            draw_stations(stations, vans)
+            draw_vans(vans, manhattan)
+            pygame.display.flip()
+            VARIANT_BLUE = (0, 0, 25)
+
+        pygame.quit()
 
 """
 # CambiarNumeroBicisCarga ############################################################################
