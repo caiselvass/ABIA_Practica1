@@ -30,11 +30,11 @@ class EstadoBicing(object):
     def __eq__(self, other) -> bool:
         return isinstance(other, EstadoBicing) and self.info_estaciones == other.info_estaciones and self.lista_furgonetas == other.lista_furgonetas
 
-    """ def __lt__(self, other) -> bool:
+    def __lt__(self, other) -> bool:
         return hash(self) < hash(other)
     
     def __hash__(self) -> int:
-        return hash((self.info_estaciones, self.lista_furgonetas))"""
+        return hash((self.info_estaciones, self.lista_furgonetas))
     
     def __str__(self) -> str:
         str_rutas = ""
@@ -60,11 +60,6 @@ class EstadoBicing(object):
 
     def realizar_ruta(self, id_furgoneta: int) -> float:
         furgoneta = self.lista_furgonetas[id_furgoneta]
-        
-        self.info_estaciones: list[dict] = [{'index': index, \
-                                    'dif': est.num_bicicletas_next - est.demanda, \
-                                    'disp': est.num_bicicletas_no_usadas} \
-                                        for index, est in enumerate(params.estaciones)]
         
         # Calculamos el número de bicicletas que se cargarán y descargarán
         self.asignar_bicicletas_carga_descarga(id_furgoneta)
@@ -108,7 +103,6 @@ class EstadoBicing(object):
     def calcular_balance_ruta_furgoneta(self, id_furgoneta: int) -> float:
         furgoneta = self.lista_furgonetas[id_furgoneta]
         
-
         carga = furgoneta.bicicletas_cargadas
         descarga1 = furgoneta.bicicletas_descargadas_1
         descarga2 = furgoneta.bicicletas_descargadas_2
@@ -149,10 +143,15 @@ class EstadoBicing(object):
     def calcular_balance_total(self) -> float:
         balance_rutas = self.calcular_balance_rutas()
         balance_estaciones = self.calcular_balance_estaciones()
-        """print(f'BALANCE RUTAS: {balance_rutas}, BALANCE ESTACIONES: {balance_estaciones} TOTAL MOVIMENT: {balance_estaciones + balance_rutas}')"""
+        """print(f'BALANCE RUTAS: {balance_rutas}, BALANCE ESTACIONES: {balance_estaciones} TOTAL MOVIMENT: {balance_estaciones + balance_rutas}')
+        """       
         return balance_rutas + balance_estaciones
 
     def heuristic(self) -> float:
+        self.info_estaciones: list[dict] = [{'index': index, \
+                    'dif': est.num_bicicletas_next - est.demanda, \
+                    'disp': est.num_bicicletas_no_usadas} \
+                        for index, est in enumerate(params.estaciones)]
         for furgoneta in self.lista_furgonetas:
             self.realizar_ruta(furgoneta.id)
         return self.calcular_balance_total()
@@ -175,7 +174,9 @@ class EstadoBicing(object):
             # IntercambiarEstacionCarga ##########################################################################
             for furgoneta2 in self.lista_furgonetas:
                 if furgoneta.id < furgoneta2.id: # Para evitar que se repitan los intercambios
-                    yield IntercambiarEstacionCarga(id_furgoneta1=furgoneta.id, id_furgoneta2=furgoneta2.id)
+                    if furgoneta2.id_est_origen != furgoneta.id_est_dest1 and furgoneta2.id_est_origen != furgoneta.id_est_dest2 \
+                        and furgoneta.id_est_origen != furgoneta2.id_est_dest1 and furgoneta.id_est_origen != furgoneta2.id_est_dest2:
+                            yield IntercambiarEstacionCarga(id_furgoneta1=furgoneta.id, id_furgoneta2=furgoneta2.id)
             
             # CambiarOrdenDescarga ###############################################################################
             yield CambiarOrdenDescarga(id_furgoneta=furgoneta.id)
