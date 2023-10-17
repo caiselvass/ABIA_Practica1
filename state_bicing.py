@@ -15,11 +15,11 @@ from pdb import set_trace as bp
 
 class EstadoBicing(object):
     def __init__(self, lista_furgonetas: list[Furgoneta]) -> None:
+
         self.info_estaciones: list[dict] = [{'index': index, \
                                     'dif': est.num_bicicletas_next - est.demanda, \
                                     'disp': est.num_bicicletas_no_usadas} \
                                         for index, est in enumerate(params.estaciones)]
-        print(self.info_estaciones, 'HOLA')
         self.lista_furgonetas = lista_furgonetas
 
     def copy(self) -> 'EstadoBicing':
@@ -60,13 +60,18 @@ class EstadoBicing(object):
 
     def realizar_ruta(self, id_furgoneta: int) -> float:
         furgoneta = self.lista_furgonetas[id_furgoneta]
-         
+        
+        self.info_estaciones: list[dict] = [{'index': index, \
+                                    'dif': est.num_bicicletas_next - est.demanda, \
+                                    'disp': est.num_bicicletas_no_usadas} \
+                                        for index, est in enumerate(params.estaciones)]
+        
         # Calculamos el número de bicicletas que se cargarán y descargarán
         self.asignar_bicicletas_carga_descarga(id_furgoneta)
 
-        print('\n\n\nNOU MOVIMENT')
+        """print('\n\n\nNOU MOVIMENT')
         print(f'ESTACIO CARGA {furgoneta.id_est_origen} ESTACIO1 {furgoneta.id_est_dest1} ESTACIO2 {furgoneta.id_est_dest2}')
-        print(f'olf inf: {self.info_estaciones}')
+        print(f'olf inf: {self.info_estaciones}')"""
 
         # Actalizamos los valores de diferencia y disponibilidad
         self.info_estaciones[furgoneta.id_est_origen]['dif'] -= furgoneta.bicicletas_cargadas
@@ -79,7 +84,7 @@ class EstadoBicing(object):
         self.info_estaciones[furgoneta.id_est_dest2]['disp'] += furgoneta.bicicletas_descargadas_2
 
 
-        print(f'new inf: {self.info_estaciones}')
+        """print(f'new inf: {self.info_estaciones}')"""
     
     def asignar_bicicletas_carga_descarga(self, id_furgoneta: int) -> None:
         furgoneta = self.lista_furgonetas[id_furgoneta]
@@ -144,7 +149,7 @@ class EstadoBicing(object):
     def calcular_balance_total(self) -> float:
         balance_rutas = self.calcular_balance_rutas()
         balance_estaciones = self.calcular_balance_estaciones()
-        print(f'BALANCE RUTAS: {balance_rutas}, BALANCE ESTACIONES: {balance_estaciones} TOTAL MOVIMENT: {balance_estaciones + balance_rutas}')
+        """print(f'BALANCE RUTAS: {balance_rutas}, BALANCE ESTACIONES: {balance_estaciones} TOTAL MOVIMENT: {balance_estaciones + balance_rutas}')"""
         return balance_rutas + balance_estaciones
 
     def heuristic(self) -> float:
@@ -167,7 +172,7 @@ class EstadoBicing(object):
                     yield CambiarEstacionCarga(id_furgoneta=furgoneta.id, \
                                                id_est=est['index'])
             
-            """# IntercambiarEstacionCarga ##########################################################################
+            # IntercambiarEstacionCarga ##########################################################################
             for furgoneta2 in self.lista_furgonetas:
                 if furgoneta.id < furgoneta2.id: # Para evitar que se repitan los intercambios
                     yield IntercambiarEstacionCarga(id_furgoneta1=furgoneta.id, id_furgoneta2=furgoneta2.id)
@@ -202,7 +207,7 @@ class EstadoBicing(object):
             
             # QuitarEstacionDescarga #############################################################################
             for pos_est in {0, 1}:
-                yield QuitarEstacionDescarga(id_furgoneta=furgoneta.id, pos_est=pos_est)"""
+                yield QuitarEstacionDescarga(id_furgoneta=furgoneta.id, pos_est=pos_est)
     
     def apply_action(self, action: BicingOperator) -> 'EstadoBicing':
         new_state: EstadoBicing = self.copy()

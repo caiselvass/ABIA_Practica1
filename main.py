@@ -57,8 +57,6 @@ def generate_initial_state(greedy: bool = False, semilla: Union[int, None] = Non
             elif est['dif'] > 0 and est['disp'] > 0:
                 lista_est_excedente.append(est['index'])
         
-        print(lista_est_excedente)
-        print(lista_est_faltante)
         n_estaciones_origen = len(lista_est_excedente)
         n_estaciones_destino = len(lista_est_faltante)
                 
@@ -123,14 +121,14 @@ if __name__ == '__main__':
           #(acum_bicicletas, acum_demanda, acum_disponibles, acum_necesarias))
     
     # Experimento
-    initial_state: EstadoBicing = generate_initial_state(greedy=True, semilla=46)
+    initial_state: EstadoBicing = generate_initial_state(greedy=True)
     initial_state.heuristic()
     initial_state.print_state(inicial=True)
-    #initial_state.visualize_state(manhattan = True)
+    initial_state.visualize_state(manhattan = True)
 
     problema_bicing = ProblemaBicing(initial_state)
     final_solution = hill_climbing(problema_bicing)
     final_solution.print_state()
     print("SOLUCIONES COMPROBADAS:", problema_bicing.solutions_checked, "\n")
-    #final_solution.visualize_state(manhattan = True)
+    final_solution.visualize_state(manhattan = True)
 
