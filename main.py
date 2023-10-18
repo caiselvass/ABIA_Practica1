@@ -7,9 +7,13 @@ from aima.search import hill_climbing, simulated_annealing
 import random
 from typing import Union
 from timeit import timeit
+import matplotlib
+matplotlib.use('agg')
+import matplotlib.pyplot as plt
+
 
 # Declaración de funciones
-def generate_initial_state(greedy: bool = False, semilla: Union[int, None] = None) -> EstadoBicing:
+def generate_initial_state(opt: int = 0, semilla: Union[int, None] = None) -> EstadoBicing:
     rng = random.Random(semilla)
     
     n_estaciones = params.n_estaciones
@@ -29,7 +33,7 @@ def generate_initial_state(greedy: bool = False, semilla: Union[int, None] = Non
     est_con_furgoneta = set()
     
     # DISTRIBUCIÓN TOTALMENTE RANDOM
-    if not greedy:        
+    if opt == 0:        
         for furgoneta in lista_furgonetas:
             # Asignamos una estación de origen a la furgoneta
             id_est_o = rng.randint(0, n_estaciones - 1)
@@ -46,8 +50,8 @@ def generate_initial_state(greedy: bool = False, semilla: Union[int, None] = Non
             furgoneta.id_est_dest1 = id_est_d1
             furgoneta.id_est_dest2 = id_est_d2
     
-    # DISTRIBUCIÓN "AVARICIOSA" (TENIENDO EN CUENTA LA DIFERENCIA DE BICICLETAS DE CADA ESTACIÓN)
-    else:
+    # NIVEL DE OPTIMIZACIÓN 1: ORIGEN DE FURGONETAS A ESTACIONES CON DIFERENCIA POSITIVA, DESTINO A ESTACIONES CON DIFERENCIA NEGATIVA
+    elif opt == 1:
         # Creamos una lista con los índices de las estaciones con diferencia positiva y otra con los de diferencia negativa    
         lista_est_excedente: list[dict] = []
         lista_est_faltante: list[dict] = []
@@ -75,6 +79,10 @@ def generate_initial_state(greedy: bool = False, semilla: Union[int, None] = Non
 
             furgoneta.id_est_dest1 = lista_est_faltante[id_est_d1]
             furgoneta.id_est_dest2 = lista_est_faltante[id_est_d2]
+
+    # NIVEL DE OPTIMIZACIÓN 2: 
+    elif opt == 2:
+        pass
                 
     state = EstadoBicing(lista_furgonetas=lista_furgonetas)
     return state
@@ -121,14 +129,27 @@ if __name__ == '__main__':
           #(acum_bicicletas, acum_demanda, acum_disponibles, acum_necesarias))
     
     # Experimento
-    initial_state: EstadoBicing = generate_initial_state(greedy=True)
+    initial_state: EstadoBicing = generate_initial_state(opt = 1)
     initial_state.heuristic()
     initial_state.print_state(inicial=True)
-    #initial_state.visualize_state(manhattan = True)
+    initial_state.visualize_state(manhattan = True)
 
     problema_bicing = ProblemaBicing(initial_state)
     final_solution = hill_climbing(problema_bicing)
     final_solution.print_state()
     print("SOLUCIONES COMPROBADAS:", problema_bicing.solutions_checked, "\n")
-    #final_solution.visualize_state(manhattan = True)
+    final_solution.visualize_state(manhattan = True)
+
+    # Obtener estadísticas
+    times_hill_climbing = [timeit(lambda: hill_climbing(problema_bicing), number=1) for _ in range(15)]
+    times_simulated_annealing = [timeit(lambda: simulated_annealing(problema_bicing), number=1) for _ in range(15)]
+    
+    data_to_plot = [times_hill_climbing, times_simulated_annealing]
+    labels=['hill_climbing', 'simulated_annealing']
+        
+    plt.boxplot(data_to_plot, labels=labels)
+    plt.ylabel('Tiempo de ejecución (s)')
+    plt.title('Comparativa de Hill Climning y Simulated Annealing con Boxplots')
+    plt.savefig('test.png')
+
 

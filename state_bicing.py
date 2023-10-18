@@ -39,17 +39,27 @@ class EstadoBicing(object):
         for furgoneta in self.lista_furgonetas:
             km_trayecto1 = distancia_manhattan(self.get_coords_est(furgoneta.id_est_origen), self.get_coords_est(furgoneta.id_est_dest1)) / 1000
             km_trayecto2 = distancia_manhattan(self.get_coords_est(furgoneta.id_est_dest1), self.get_coords_est(furgoneta.id_est_dest2)) / 1000
-            
+            total_km = km_trayecto1 + km_trayecto2
+
+            primer_id = furgoneta.id_est_dest1
+            segundo_id = furgoneta.id_est_dest2
+
             primera_parada = self.get_coords_est(furgoneta.id_est_dest1)
             segunda_parada = self.get_coords_est(furgoneta.id_est_dest2)
             num_primera_parada = furgoneta.bicicletas_descargadas_1
             num_segunda_parada = furgoneta.bicicletas_descargadas_2
 
+            if primer_id == segundo_id:
+                segundo_id = "NONE"
+                segunda_parada = "(NONE, NONE)"
+                num_segunda_parada = "NONE"
+                km_trayecto2 = "NONE"
+
             str_rutas += f"   * F[{furgoneta.id}]:"\
                   + f"  C=[Est({furgoneta.id_est_origen})={self.get_coords_est(furgoneta.id_est_origen)}, num={furgoneta.bicicletas_cargadas}]"\
-                      + f"  |  D1=[Est({furgoneta.id_est_dest1})={primera_parada}, num={num_primera_parada}]"\
-                          + f"  |  D2=[Est({furgoneta.id_est_dest2})={segunda_parada}, num={num_segunda_parada}]"\
-                              +f"  |  KM=({km_trayecto1})+({km_trayecto2})={km_trayecto1+km_trayecto2} [{self.calcular_balance_ruta_furgoneta(furgoneta.id)}€]\n"
+                      + f"  |  D1=[Est({primer_id})={primera_parada}, num={num_primera_parada}]"\
+                          + f"  |  D2=[Est({segundo_id})={segunda_parada}, num={num_segunda_parada}]"\
+                              +f"  |  KM=({km_trayecto1})+({km_trayecto2})={total_km} [{self.calcular_balance_ruta_furgoneta(furgoneta.id)}€]\n"
 
         return f"\n\nRUTAS CALCULADAS:\n{str_rutas}"
     
@@ -85,12 +95,20 @@ class EstadoBicing(object):
         est_destino2 = self.info_estaciones[furgoneta.id_est_dest2]
 
         # Calculamos el número de bicicletas que se cargarán y descargarán
-        bicicletas_carga = min(30, \
-                                est_origen['disp'] if est_origen['disp'] > 0 else 0, \
-                                    (abs(est_destino1['dif']) if (est_destino1['dif'] < 0) else 0) + \
-                                        (abs(est_destino2['dif']) if (est_destino2['dif'] < 0) else 0))
-        bicicletas_descarga_1 = min(bicicletas_carga, abs(est_destino1['dif']) if (est_destino1['dif'] < 0) else 0)
-        bicicletas_descarga_2 = bicicletas_carga - bicicletas_descarga_1
+        if furgoneta.id_est_dest1 != furgoneta.id_est_dest2:
+            bicicletas_carga = min(30, \
+                                    est_origen['disp'] if est_origen['disp'] > 0 else 0, \
+                                        (abs(est_destino1['dif']) if (est_destino1['dif'] < 0) else 0) + \
+                                            (abs(est_destino2['dif']) if (est_destino2['dif'] < 0) else 0))
+            bicicletas_descarga_1 = min(bicicletas_carga, abs(est_destino1['dif']) if (est_destino1['dif'] < 0) else 0)
+            bicicletas_descarga_2 = bicicletas_carga - bicicletas_descarga_1
+
+        else: # Caso en que se hace un movimiento "nulo"
+            bicicletas_carga = min(30, \
+                                    est_origen['disp'] if est_origen['disp'] > 0 else 0, \
+                                        abs(est_destino1['dif']) if (est_destino1['dif'] < 0) else 0)
+            bicicletas_descarga_1 = bicicletas_carga
+            bicicletas_descarga_2 = 0
 
         # Actualizamos los valores en la furgoneta
         furgoneta.bicicletas_cargadas = bicicletas_carga
@@ -242,9 +260,9 @@ class EstadoBicing(object):
 
         elif isinstance(action, QuitarEstacionDescarga):
             furgoneta = new_state.lista_furgonetas[action.id_furgoneta]
-            if action.pos_est == 0:
-                furgoneta.id_est_dest1 = furgoneta.id_est_origen
-            else:
+            if action.pos_est == 0: # Quitar la primera estación de descarga
+                furgoneta.id_est_dest1 = furgoneta.id_est_dest2
+            else: # Quitar la segunda estación de descarga
                 furgoneta.id_est_dest2 = furgoneta.id_est_dest1
 
         return new_state
