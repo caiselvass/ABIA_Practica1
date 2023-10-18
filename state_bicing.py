@@ -357,7 +357,7 @@ class EstadoBicing(object):
         def draw_texts(self):
             for id_est, station in enumerate(stations):
                 # Diferencia de la estación
-                number = str(f"E{id_est}({self.info_estaciones[id_est]['dif']})")
+                number = str(f"E{id_est}(DF:{params.estaciones[id_est].num_bicicletas_next - params.estaciones[id_est].demanda}, DP:{params.estaciones[id_est].num_bicicletas_no_usadas})")
 
                 # Crea una fuente
                 font = pygame.font.Font(None, 15)
