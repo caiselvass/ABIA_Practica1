@@ -1,6 +1,7 @@
 from aima.search import Problem
 from state_bicing import EstadoBicing
 from typing import Generator
+from parameters_bicing import params
 
 
 class ProblemaBicing(Problem):
@@ -19,7 +20,7 @@ class ProblemaBicing(Problem):
     
     def value(self, state: EstadoBicing) -> float:
         self.solutions_checked += 1
-        return state.heuristic()
+        return state.heuristic(coste_transporte=params.coste_transporte)
     
     def goal_test(self, state: EstadoBicing) -> bool:
         return False

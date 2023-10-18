@@ -160,11 +160,15 @@ class EstadoBicing(object):
         balance_estaciones = self.calcular_balance_estaciones()
         return balance_rutas + balance_estaciones
 
-    def heuristic(self) -> float:
+    def heuristic(self, coste_transporte: bool) -> float:
         self.__restaurar_estaciones()
         for furgoneta in self.lista_furgonetas:
             self.realizar_ruta(furgoneta.id)
-        return self.calcular_balance_total()
+        
+        if coste_transporte:
+            return self.calcular_balance_total()
+        else:
+            return self.calcular_balance_estaciones()
         
     def generate_actions(self) -> Generator:
         # Creamos un set() para aseguramos de que dos furgonetas no carguen en la misma estación
@@ -274,9 +278,9 @@ class EstadoBicing(object):
         else:
             str_balances += f"\n{'*'*35 + ' [ SOLUCIÓN FINAL ] ' + '*'*35}\n"
         
-        str_balances += f"\nBALANCE RUTAS: {self.calcular_balance_rutas()}\n" + \
+        str_balances += f"\nBALANCE RUTAS: {self.calcular_balance_rutas() if params.coste_transporte else 'NONE'}\n" + \
                     f"BALANCE ESTACIONES: {self.calcular_balance_estaciones()}\n" + \
-                        f"BALANCE TOTAL: {self.calcular_balance_total()}"
+                        f"BALANCE TOTAL: {self.calcular_balance_total() if params.coste_transporte else self.calcular_balance_estaciones()}"
         
         print(str_balances + self.__str__())
 

@@ -97,7 +97,7 @@ def generate_initial_state(opt: int = 0, iterations: int = 100, semilla: Union[i
     # NIVEL DE OPTIMIZACIÓ 3: CREAMOS LA SOLUCIÓN COMPROBANDO EL HEURÍSTICO DE DIFERENTES ESTADOS
     elif opt == 3:
         random_initial_states_opt1 = [generate_initial_state(opt = 1) for _ in range(iterations)]
-        random_initial_states_opt1.sort(key=lambda state: state.heuristic(), reverse=True)
+        random_initial_states_opt1.sort(key=lambda state: state.heuristic(coste_transporte=params.coste_transporte), reverse=True)
         return random_initial_states_opt1[0]
                 
     state = EstadoBicing(lista_furgonetas=lista_furgonetas)
@@ -147,8 +147,8 @@ if __name__ == '__main__':
 ##############################################################################################################################################
 
     # Experimento
-    initial_state: EstadoBicing = generate_initial_state(opt = 3, iterations=1000)
-    initial_state.heuristic()
+    initial_state: EstadoBicing = generate_initial_state(opt = 0, iterations=1000)
+    initial_state.heuristic(coste_transporte=params.coste_transporte)
     initial_state.print_state(inicial=True)
     initial_state.visualize_state(manhattan = True)
 
