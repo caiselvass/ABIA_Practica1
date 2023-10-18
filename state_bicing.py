@@ -340,6 +340,9 @@ class EstadoBicing(object):
                 if station not in printed_origins and station not in printed_destinations:            
                     pygame.draw.circle(screen, BLACK, (scale(station[0]), scale(station[1])), 4)
 
+        # Dibujar números de estaciones
+        def draw_texts(self):
+            for id_est, station in enumerate(stations):
                 # Diferencia de la estación
                 number = str(f"E{id_est}({self.info_estaciones[id_est]['dif']})")
 
@@ -395,6 +398,7 @@ class EstadoBicing(object):
             draw_city()
             draw_stations(stations, vans)
             draw_vans(vans, manhattan)
+            draw_texts(self)
             pygame.display.flip()
 
         pygame.quit()
