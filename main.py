@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 
 # Declaración de funciones
-def generate_initial_state(opt: int = 0, semilla: Union[int, None] = None) -> EstadoBicing:
+def generate_initial_state(opt: int = 0, iterations: int = 100, semilla: Union[int, None] = None) -> EstadoBicing:
     rng = random.Random(semilla)
     
     n_estaciones = params.n_estaciones
@@ -80,9 +80,25 @@ def generate_initial_state(opt: int = 0, semilla: Union[int, None] = None) -> Es
             furgoneta.id_est_dest1 = lista_est_faltante[id_est_d1]
             furgoneta.id_est_dest2 = lista_est_faltante[id_est_d2]
 
-    # NIVEL DE OPTIMIZACIÓN 2: 
+    # NIVEL DE OPTIMIZACIÓN 2: ORIGEN DE FURGONETAS A LAS ESTACIONES CON MAYOR DIFERENCIA POSITIVA, DESTINO A LAS ESTACIONES CON MAYOR DIFERENCIA NEGATIVA
     elif opt == 2:
-        pass
+         # Creamos una lista con los índices de las estaciones con diferencia positiva y otra con los de diferencia negativa    
+        lista_est_excedente: list[dict] = []
+        lista_est_faltante: list[dict] = []
+        for est in info_estaciones:
+            if est['dif'] < 0:
+                lista_est_faltante.append(est['index'])
+            elif est['dif'] > 0 and est['disp'] > 0:
+                lista_est_excedente.append(est['index'])
+        
+        n_estaciones_origen = len(lista_est_excedente)
+        n_estaciones_destino = len(lista_est_faltante)
+
+    # NIVEL DE OPTIMIZACIÓ 3: CREAMOS LA SOLUCIÓN COMPROBANDO EL HEURÍSTICO DE DIFERENTES ESTADOS
+    elif opt == 3:
+        random_initial_states_opt1 = [generate_initial_state(opt = 1) for _ in range(iterations)]
+        random_initial_states_opt1.sort(key=lambda state: state.heuristic(), reverse=True)
+        return random_initial_states_opt1[0]
                 
     state = EstadoBicing(lista_furgonetas=lista_furgonetas)
     return state
@@ -128,19 +144,21 @@ if __name__ == '__main__':
     #print("Bicis= %3d Demanda= %3d Disponibles= %3d Necesitan= %3d" %
           #(acum_bicicletas, acum_demanda, acum_disponibles, acum_necesarias))
     
+##############################################################################################################################################
+
     # Experimento
-    initial_state: EstadoBicing = generate_initial_state(opt = 1)
+    initial_state: EstadoBicing = generate_initial_state(opt = 3, iterations=1000)
     initial_state.heuristic()
     initial_state.print_state(inicial=True)
     initial_state.visualize_state(manhattan = True)
 
     problema_bicing = ProblemaBicing(initial_state)
-    final_solution = hill_climbing(problema_bicing)
-    final_solution.print_state()
+    final_solution_HC = hill_climbing(problema_bicing)
+    final_solution_HC.print_state()
     print("SOLUCIONES COMPROBADAS:", problema_bicing.solutions_checked, "\n")
-    final_solution.visualize_state(manhattan = True)
+    final_solution_HC.visualize_state(manhattan = True)
 
-    # Obtener estadísticas
+    # Obtener estadísticas y generar un box plot
     times_hill_climbing = [timeit(lambda: hill_climbing(problema_bicing), number=1) for _ in range(15)]
     times_simulated_annealing = [timeit(lambda: simulated_annealing(problema_bicing), number=1) for _ in range(15)]
     
@@ -151,5 +169,14 @@ if __name__ == '__main__':
     plt.ylabel('Tiempo de ejecución (s)')
     plt.title('Comparativa de Hill Climning y Simulated Annealing con Boxplots')
     plt.savefig('test.png')
-
+    
+    """# Obtener estadísticas y generar un line plot
+    hill_climbing_value = None # HEM DE FER QUE HILL CLIMBING VALUE --> returns a list of objective function values over iterations:
+    
+    plt.figure(figsize=(10, 6))  # Tamaño de la figura
+    plt.plot(hill_climbing_value, marker='o', linestyle='-')  # Creamos el gráfico
+    plt.title("Progreso de Hill Climbing") 
+    plt.xlabel("Iteraciones")  
+    plt.ylabel("Coste")  
+    plt.grid(True)  # Añadimos grid para una mejor ínterpretación"""
 
