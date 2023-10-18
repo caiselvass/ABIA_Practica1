@@ -68,10 +68,6 @@ class EstadoBicing(object):
         # Calculamos el número de bicicletas que se cargarán y descargarán
         self.asignar_bicicletas_carga_descarga(id_furgoneta)
 
-        """print('\n\n\nNOU MOVIMENT')
-        print(f'ESTACIO CARGA {furgoneta.id_est_origen} ESTACIO1 {furgoneta.id_est_dest1} ESTACIO2 {furgoneta.id_est_dest2}')
-        print(f'olf inf: {self.info_estaciones}')"""
-
         # Actalizamos los valores de diferencia y disponibilidad
         self.info_estaciones[furgoneta.id_est_origen]['dif'] -= furgoneta.bicicletas_cargadas
         self.info_estaciones[furgoneta.id_est_origen]['disp'] -= furgoneta.bicicletas_cargadas
@@ -82,9 +78,6 @@ class EstadoBicing(object):
         self.info_estaciones[furgoneta.id_est_dest2]['dif'] += furgoneta.bicicletas_descargadas_2
         self.info_estaciones[furgoneta.id_est_dest2]['disp'] += furgoneta.bicicletas_descargadas_2
 
-
-        """print(f'new inf: {self.info_estaciones}')"""
-    
     def asignar_bicicletas_carga_descarga(self, id_furgoneta: int) -> None:
         furgoneta = self.lista_furgonetas[id_furgoneta]
         est_origen = self.info_estaciones[furgoneta.id_est_origen]
@@ -147,8 +140,6 @@ class EstadoBicing(object):
     def calcular_balance_total(self) -> float:
         balance_rutas = self.calcular_balance_rutas()
         balance_estaciones = self.calcular_balance_estaciones()
-        """print(f'BALANCE RUTAS: {balance_rutas}, BALANCE ESTACIONES: {balance_estaciones} TOTAL MOVIMENT: {balance_estaciones + balance_rutas}')
-        """       
         return balance_rutas + balance_estaciones
 
     def heuristic(self) -> float:
@@ -402,71 +393,3 @@ class EstadoBicing(object):
             pygame.display.flip()
 
         pygame.quit()
-
-"""
-# CambiarNumeroBicisCarga ############################################################################
-if furgoneta.info_est_origen['disp'] > 0:
-    # Comprobamos que no haya ningua estación destino igual a la de Origen, para evitar cargar bicicletas de más en ese caso
-    if (furgoneta.origenX, furgoneta.origenY) == furgoneta.coord_destinos[0] == furgoneta.coord_destinos[1]:
-        yield CambiarNumeroBicisCarga(furgoneta, furgoneta.info_est_origen, num_bicicletas_carga=0)
-    
-    # Caso solo haremos 1 movimiento "real"
-    elif (furgoneta.origenX, furgoneta.origenY) in {furgoneta.coord_destinos[0], furgoneta.coord_destinos[1]} and furgoneta.coord_destinos[0] != furgoneta.coord_destinos[1]: 
-        if (furgoneta.origenX, furgoneta.origenY) == furgoneta.coord_destinos[0]:
-            dif_destino1 = furgoneta.info_est_destino[1]['dif']
-        else:
-            dif_destino1 = furgoneta.info_est_destino[0]['dif']
-        
-        num_max = min(30, \
-                        furgoneta.info_est_origen['disp'] if furgoneta.info_est_origen['disp'] > 0 else 0, \
-                            abs(dif_destino1) if dif_destino1 < 0 else 0)
-            
-        for num_bicicletas_carga in range(0, num_max + 1):
-            yield CambiarNumeroBicisCarga(furgoneta, furgoneta.info_est_origen, num_bicicletas_carga=0)
-
-    # Caso 2 movimientos "reales"
-    else:
-        dif_destino1 = furgoneta.info_est_destino[0]['dif']
-        dif_destino2 = furgoneta.info_est_destino[1]['dif']
-        num_max = min(30, \
-                        furgoneta.info_est_origen['disp'] if furgoneta.info_est_origen['disp'] > 0 else 0, \
-                            abs(dif_destino1) if dif_destino1 < 0 else 0 + abs(dif_destino2) if dif_destino2 < 0 else 0)
-
-        for num_bicicletas_carga in range(0, num_max + 1):
-            yield CambiarNumeroBicisCarga(furgoneta, furgoneta.info_est_origen, num_bicicletas_carga)
-
-"""
-
-
-"""elif isinstance(action, CambiarNumeroBicisCarga):
-    furgoneta = new_state.lista_furgonetas[action.id_furgoneta]
-    furgoneta.set_num_bicicletas_cargadas(action.num_bicicletas_carga)"""
-        
-
-"""def realizar_ruta2(self, id_furgoneta: int) -> float:
-    furgoneta = self.lista_furgonetas[id_furgoneta]
-    self.asignar_bicicletas_carga_descarga(id_furgoneta)
-    
-    carga = furgoneta.bicicletas_cargadas
-
-    # Calcular costos y establecer el orden de las paradas
-    descarga1 = furgoneta.bicicletas_descargadas_1
-    descarga2 = furgoneta.bicicletas_descargadas_2
-    distancia_a_b = distancia_manhattan(self.get_coords_est(furgoneta.id_est_origen), self.get_coords_est(furgoneta.id_est_dest1)) / 1000
-    distancia_a_c = distancia_manhattan(self.get_coords_est(furgoneta.id_est_origen), self.get_coords_est(furgoneta.id_est_dest2)) / 1000 
-    distancia_b_c = distancia_manhattan(self.get_coords_est(furgoneta.id_est_dest1), self.get_coords_est(furgoneta.id_est_dest2)) / 1000
-    coste_a_b_c = ((carga + 9) // 10) * distancia_a_b + ((carga-descarga1 + 9) // 10) * distancia_b_c
-    coste_a_c_b = ((carga + 9) // 10) * distancia_a_c + ((carga-descarga2 + 9) // 10) * distancia_b_c
-
-    # Acutalizamos los valores de diferencia y disponibilidad
-    self.info_estaciones[furgoneta.id_est_origen]['dif'] -= carga
-    self.info_estaciones[furgoneta.id_est_origen]['disp'] -= carga
-
-    self.info_estaciones[furgoneta.id_est_dest1]['dif'] += descarga1
-    self.info_estaciones[furgoneta.id_est_dest1]['disp'] += descarga1
-
-    self.info_estaciones[furgoneta.id_est_dest2]['dif'] += descarga2
-    self.info_estaciones[furgoneta.id_est_dest2]['disp'] += descarga2
-
-    return -min(coste_a_b_c, coste_a_c_b)
-"""
