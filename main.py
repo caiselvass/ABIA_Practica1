@@ -147,7 +147,7 @@ if __name__ == '__main__':
 ##############################################################################################################################################
 
     # Experimento
-    initial_state: EstadoBicing = generate_initial_state(opt = 0, iterations=1000)
+    initial_state: EstadoBicing = generate_initial_state(opt = 1, iterations = 1000)
     initial_state.heuristic(coste_transporte=params.coste_transporte)
     initial_state.print_state(inicial=True)
     initial_state.visualize_state(manhattan = True)
@@ -170,6 +170,12 @@ if __name__ == '__main__':
     plt.title('Comparativa de Hill Climning y Simulated Annealing con Boxplots')
     plt.savefig('test.png')
     
+
+
+
+
+
+
     """# Obtener estadísticas y generar un line plot
     hill_climbing_value = None # HEM DE FER QUE HILL CLIMBING VALUE --> returns a list of objective function values over iterations:
     
