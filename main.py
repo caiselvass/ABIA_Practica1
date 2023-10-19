@@ -53,8 +53,8 @@ def generate_initial_state(opt: int = 0, iterations: int = 100, semilla: Union[i
     # NIVEL DE OPTIMIZACIÓN 1: ORIGEN DE FURGONETAS A ESTACIONES CON DIFERENCIA POSITIVA, DESTINO A ESTACIONES CON DIFERENCIA NEGATIVA
     elif opt == 1:
         # Creamos una lista con los índices de las estaciones con diferencia positiva y otra con los de diferencia negativa    
-        lista_est_excedente: list[dict] = []
-        lista_est_faltante: list[dict] = []
+        lista_est_excedente: list = []
+        lista_est_faltante: list = []
         for est in info_estaciones:
             if est['dif'] < 0:
                 lista_est_faltante.append(est['index'])
@@ -83,16 +83,23 @@ def generate_initial_state(opt: int = 0, iterations: int = 100, semilla: Union[i
     # NIVEL DE OPTIMIZACIÓN 2: ORIGEN DE FURGONETAS A LAS ESTACIONES CON MAYOR DIFERENCIA POSITIVA, DESTINO A LAS ESTACIONES CON MAYOR DIFERENCIA NEGATIVA
     elif opt == 2:
          # Creamos una lista con los índices de las estaciones con diferencia positiva y otra con los de diferencia negativa    
-        lista_est_excedente: list[dict] = []
-        lista_est_faltante: list[dict] = []
+        lista_est_excedente: list = []
+        lista_est_faltante: list = []
         for est in info_estaciones:
             if est['dif'] < 0:
-                lista_est_faltante.append(est['index'])
+                lista_est_faltante.append((est['dif'], est['index']))
             elif est['dif'] > 0 and est['disp'] > 0:
-                lista_est_excedente.append(est['index'])
+                lista_est_excedente.append((est['dif'], est['index']))
         
-        n_estaciones_origen = len(lista_est_excedente)
-        n_estaciones_destino = len(lista_est_faltante)
+        lista_est_excedente.sort(reverse=True)
+        lista_est_faltante.sort()
+
+        j = 0
+        for i, furgoneta in enumerate(lista_furgonetas):
+            furgoneta.id_est_origen = lista_est_excedente[i][1]
+            furgoneta.id_est_dest1 = lista_est_faltante[j][1]
+            furgoneta.id_est_dest2 = lista_est_faltante[j+1][1]
+            j += 2
 
     # NIVEL DE OPTIMIZACIÓ 3: CREAMOS LA SOLUCIÓN COMPROBANDO EL HEURÍSTICO DE DIFERENTES ESTADOS
     elif opt == 3:
@@ -147,7 +154,7 @@ if __name__ == '__main__':
 ##############################################################################################################################################
 
     # Experimento
-    initial_state: EstadoBicing = generate_initial_state(opt = 1, iterations = 1000)
+    initial_state: EstadoBicing = generate_initial_state(opt = 0, iterations = 1000)
     initial_state.heuristic(coste_transporte=params.coste_transporte)
     initial_state.print_state(inicial=True)
     initial_state.visualize_state(manhattan = True)
@@ -159,7 +166,7 @@ if __name__ == '__main__':
     final_solution_HC.visualize_state(manhattan = True)
 
     # Obtener estadísticas y generar un box plot
-    times_hill_climbing = [timeit(lambda: hill_climbing(problema_bicing), number=1) for _ in range(15)]
+    """times_hill_climbing = [timeit(lambda: hill_climbing(problema_bicing), number=1) for _ in range(15)]
     times_simulated_annealing = [timeit(lambda: simulated_annealing(problema_bicing), number=1) for _ in range(15)]
     
     data_to_plot = [times_hill_climbing, times_simulated_annealing]
@@ -168,7 +175,7 @@ if __name__ == '__main__':
     plt.boxplot(data_to_plot, labels=labels)
     plt.ylabel('Tiempo de ejecución (s)')
     plt.title('Comparativa de Hill Climning y Simulated Annealing con Boxplots')
-    plt.savefig('test.png')
+    plt.savefig('test.png')"""
     
 
 
