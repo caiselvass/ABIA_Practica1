@@ -13,7 +13,15 @@ import matplotlib.pyplot as plt
 
 
 # Declaración de funciones
-def generate_initial_state(opt: int = 0, iterations: int = 100, semilla: Union[int, None] = None) -> EstadoBicing:
+def generate_initial_state(opt: int = 0, semilla: Union[int, None] = None, operadores_activos: dict = {operator: True for operator in {'CambiarEstacionCarga', \
+                                                               'CambiarEstacionCarga', \
+                                                                'IntercambiarEstacionCarga', \
+                                                                    'CambiarOrdenDescarga', \
+                                                                        'CambiarEstacionDescarga', \
+                                                                            'IntercambiarEstacionDescarga', \
+                                                                                'QuitarEstacionDescarga', \
+                                                                                    'ReasignarFurgoneta', \
+                                                                                        'ReordenarFurgonetas'}}) -> EstadoBicing:
     rng = random.Random(semilla)
     
     n_estaciones = params.n_estaciones
@@ -100,16 +108,28 @@ def generate_initial_state(opt: int = 0, iterations: int = 100, semilla: Union[i
             furgoneta.id_est_dest1 = lista_est_faltante[j][1]
             furgoneta.id_est_dest2 = lista_est_faltante[j+1][1]
             j += 2
-
-    # NIVEL DE OPTIMIZACIÓ 3: CREAMOS LA SOLUCIÓN COMPROBANDO EL HEURÍSTICO DE DIFERENTES ESTADOS
-    elif opt == 3:
-        random_initial_states_opt1 = [generate_initial_state(opt = 1) for _ in range(iterations)]
-        random_initial_states_opt1.sort(key=lambda state: state.heuristic(coste_transporte=params.coste_transporte), reverse=True)
-        return random_initial_states_opt1[0]
                 
-    state = EstadoBicing(lista_furgonetas=lista_furgonetas)
+    state = EstadoBicing(lista_furgonetas=lista_furgonetas, operadores_activos=operadores_activos)
     return state
     
+def comparar_resultados_operadores(iteraciones: int = 10, operadores_activos: dict = {operator: True for operator in {'CambiarEstacionCarga', \
+                                                               'CambiarEstacionCarga', \
+                                                                'IntercambiarEstacionCarga', \
+                                                                    'CambiarOrdenDescarga', \
+                                                                        'CambiarEstacionDescarga', \
+                                                                            'IntercambiarEstacionDescarga', \
+                                                                                'QuitarEstacionDescarga', \
+                                                                                    'ReasignarFurgoneta', \
+                                                                                        'ReordenarFurgonetas'}}):
+    
+    for _ in range(iteraciones):
+        semilla = random.randint(0, 1_000_000)
+        state1 = generate_initial_state(semilla=semilla)
+        state2 = generate_initial_state(semilla=semilla, operadores_activos=operadores_activos)
+        hill_climbing_1 = hill_climbing(ProblemaBicing(initial_state=state1))
+        hill_climbing_2 = hill_climbing(ProblemaBicing(initial_state=state2))
+        print(hill_climbing_1.heuristic(coste_transporte=params.coste_transporte), hill_climbing_2.heuristic(coste_transporte=params.coste_transporte))
+
 # Programa principal
 if __name__ == '__main__':
     """
@@ -154,7 +174,7 @@ if __name__ == '__main__':
 ##############################################################################################################################################
 
     # Experimento
-    initial_state: EstadoBicing = generate_initial_state(opt = 0, iterations = 1000)
+    initial_state: EstadoBicing = generate_initial_state(opt = 0)
     initial_state.heuristic(coste_transporte=params.coste_transporte)
     initial_state.print_state(inicial=True)
     initial_state.visualize_state(manhattan = True)
@@ -164,6 +184,19 @@ if __name__ == '__main__':
     final_solution_HC.print_state()
     print("SOLUCIONES COMPROBADAS:", problema_bicing.solutions_checked, "\n")
     final_solution_HC.visualize_state(manhattan = True)
+
+    # Experimentos desactivando operadores:
+    operadores_experimento = {'CambiarEstacionCarga': True, \
+                                    'CambiarEstacionCarga': True, \
+                                        'IntercambiarEstacionCarga': True, \
+                                            'CambiarOrdenDescarga': True, \
+                                                'CambiarEstacionDescarga': True, \
+                                                    'IntercambiarEstacionDescarga': True, \
+                                                        'QuitarEstacionDescarga': True, \
+                                                            'ReasignarFurgoneta': True, \
+                                                                'ReordenarFurgonetas': False}
+    
+    #comparar_resultados_operadores(iteraciones=10, operadores_activos=operadores_experimento)
 
     # Obtener estadísticas y generar un box plot
     """times_hill_climbing = [timeit(lambda: hill_climbing(problema_bicing), number=1) for _ in range(15)]
@@ -176,10 +209,6 @@ if __name__ == '__main__':
     plt.ylabel('Tiempo de ejecución (s)')
     plt.title('Comparativa de Hill Climning y Simulated Annealing con Boxplots')
     plt.savefig('test.png')"""
-    
-
-
-
 
 
 

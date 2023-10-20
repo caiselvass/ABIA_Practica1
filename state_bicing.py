@@ -3,18 +3,24 @@ from parameters_bicing import params
 from functions_bicing import distancia_manhattan
 from typing import Generator
 import pygame
+import random
 from operators_bicing import BicingOperator, \
-    CambiarEstacionCarga, \
-        IntercambiarEstacionCarga, \
-            CambiarOrdenDescarga, \
-                CambiarEstacionDescarga, \
-                    IntercambiarEstacionDescarga, \
-                        QuitarEstacionDescarga
+    MultiBicingOperator, \
+        CambiarEstacionCarga, \
+            IntercambiarEstacionCarga, \
+                CambiarOrdenDescarga, \
+                    CambiarEstacionDescarga, \
+                        IntercambiarEstacionDescarga, \
+                            QuitarEstacionDescarga, \
+                                ReasignarFurgoneta, \
+                                    ReordenarFurgonetas
 
 from pdb import set_trace as bp
 
 class EstadoBicing(object):
-    def __init__(self, lista_furgonetas: list[Furgoneta]) -> None:
+    def __init__(self, lista_furgonetas: list[Furgoneta], \
+                 operadores_activos: dict = {}) -> None:
+        self.operadores_activos = operadores_activos
         self.info_estaciones: list[dict] = [{'index': index, \
                                     'dif': est.num_bicicletas_next - est.demanda, \
                                     'disp': est.num_bicicletas_no_usadas} \
@@ -23,7 +29,8 @@ class EstadoBicing(object):
 
     def copy(self) -> 'EstadoBicing':
         new_lista_furgonetas: list[Furgoneta] = [furgoneta.copy() for furgoneta in self.lista_furgonetas]
-        return EstadoBicing(lista_furgonetas=new_lista_furgonetas)
+        new_operadores_activos: dict = {key: value for key, value in self.operadores_activos.items()}
+        return EstadoBicing(lista_furgonetas=new_lista_furgonetas, operadores_activos=new_operadores_activos)
 
     def __eq__(self, other) -> bool:
         return isinstance(other, EstadoBicing) and self.info_estaciones == other.info_estaciones and self.lista_furgonetas == other.lista_furgonetas
@@ -173,57 +180,95 @@ class EstadoBicing(object):
     def generate_actions(self) -> Generator:
         # Creamos un set() para aseguramos de que dos furgonetas no carguen en la misma estación
         estaciones_carga: set[int] = set()
+        estaciones_descarga: set[int] = set()
         for furgoneta in self.lista_furgonetas:
             estaciones_carga.add(furgoneta.id_est_origen)
+            estaciones_descarga.add(furgoneta.id_est_dest1)
+            estaciones_descarga.add(furgoneta.id_est_dest2)
         
         # Generate all the possible actions for the current state of the problem:
         for furgoneta in self.lista_furgonetas:
-            
             # CambiarEstacionCarga ###############################################################################
-            for est in self.info_estaciones:
-                if est['index'] not in estaciones_carga and est['index'] != furgoneta.id_est_dest1 and est['index'] != furgoneta.id_est_dest2:
-                    yield CambiarEstacionCarga(id_furgoneta=furgoneta.id, \
-                                               id_est=est['index'])
-            
+            if self.operadores_activos['CambiarEstacionCarga']:
+                for est in self.info_estaciones:
+                    if est['index'] not in estaciones_carga and est['index'] != furgoneta.id_est_dest1 and est['index'] != furgoneta.id_est_dest2:
+                        yield CambiarEstacionCarga(id_furgoneta=furgoneta.id, \
+                                                    id_est=est['index'])
+                        
             # IntercambiarEstacionCarga ##########################################################################
-            for furgoneta2 in self.lista_furgonetas:
-                if furgoneta.id < furgoneta2.id: # Para evitar que se repitan los intercambios
-                    if furgoneta2.id_est_origen != furgoneta.id_est_dest1 and furgoneta2.id_est_origen != furgoneta.id_est_dest2 \
-                        and furgoneta.id_est_origen != furgoneta2.id_est_dest1 and furgoneta.id_est_origen != furgoneta2.id_est_dest2:
-                            yield IntercambiarEstacionCarga(id_furgoneta1=furgoneta.id, id_furgoneta2=furgoneta2.id)
-            
+            if self.operadores_activos['IntercambiarEstacionCarga']:
+                for furgoneta2 in self.lista_furgonetas:
+                    if furgoneta.id < furgoneta2.id: # Para evitar que se repitan los intercambios
+                        if furgoneta2.id_est_origen != furgoneta.id_est_dest1 and furgoneta2.id_est_origen != furgoneta.id_est_dest2 \
+                            and furgoneta.id_est_origen != furgoneta2.id_est_dest1 and furgoneta.id_est_origen != furgoneta2.id_est_dest2:
+                                yield IntercambiarEstacionCarga(id_furgoneta1=furgoneta.id, id_furgoneta2=furgoneta2.id)
+
             # CambiarOrdenDescarga ###############################################################################
-            yield CambiarOrdenDescarga(id_furgoneta=furgoneta.id)
+            if self.operadores_activos['CambiarOrdenDescarga']:
+                yield CambiarOrdenDescarga(id_furgoneta=furgoneta.id)
 
             # CambiarEstacionDescarga ############################################################################
-            for est in self.info_estaciones:
-                if est['index'] != furgoneta.id_est_origen:
-                    for pos_est in {0, 1}:
-                        # No hacemos comprobación de que la nueva estación de descarga sea distinta a la anterior porque este 
-                        # caso ya se trata en el método asignar_bicicletas_carga_descarga()
-                        yield CambiarEstacionDescarga(id_furgoneta=furgoneta.id, \
-                                                    id_est=est['index'], \
-                                                        pos_est=pos_est)
-                
+            if self.operadores_activos['CambiarEstacionDescarga']:
+                for est in self.info_estaciones:
+                    if est['index'] != furgoneta.id_est_origen:
+                        for pos_est in {0, 1}:
+                            # No hacemos comprobación de que la nueva estación de descarga sea distinta a la anterior porque este 
+                            # caso ya se trata en el método asignar_bicicletas_carga_descarga()
+                            yield CambiarEstacionDescarga(id_furgoneta=furgoneta.id, \
+                                                        id_est=est['index'], \
+                                                            pos_est=pos_est)
+            
             # IntercambiarEstacionDescarga #######################################################################
-            for furgoneta2 in self.lista_furgonetas:
-                if furgoneta.id < furgoneta2.id: # Para evitar que se repitan los intercambios
-                    f_est_destinos = (furgoneta.id_est_dest1, furgoneta.id_est_dest2)
-                    f2_est_destinos = (furgoneta2.id_est_dest1, furgoneta2.id_est_dest2)
-                    for pos_est1 in {0, 1}:
-                        for pos_est2 in {0, 1}:
-                            if self.get_coords_est(f_est_destinos[pos_est1]) != self.get_coords_est(f2_est_destinos[pos_est2]): # Para no intercambiar la misma estación
-                                id_estacion1 = f_est_destinos[pos_est1]
-                                id_estacion2 = f2_est_destinos[pos_est2]
-                                if id_estacion2 != furgoneta.id_est_origen and id_estacion1 != furgoneta2.id_est_origen:
-                                    yield IntercambiarEstacionDescarga(id_furgoneta1=furgoneta.id, id_furgoneta2=furgoneta2.id, \
-                                                                    id_est1=id_estacion1, id_est2=id_estacion2, \
-                                                                        pos_est1=pos_est1, pos_est2=pos_est2)
+            if self.operadores_activos['IntercambiarEstacionDescarga']:    
+                for furgoneta2 in self.lista_furgonetas:
+                    if furgoneta.id < furgoneta2.id: # Para evitar que se repitan los intercambios
+                        f_est_destinos = (furgoneta.id_est_dest1, furgoneta.id_est_dest2)
+                        f2_est_destinos = (furgoneta2.id_est_dest1, furgoneta2.id_est_dest2)
+                        for pos_est1 in {0, 1}:
+                            for pos_est2 in {0, 1}:
+                                if self.get_coords_est(f_est_destinos[pos_est1]) != self.get_coords_est(f2_est_destinos[pos_est2]): # Para no intercambiar la misma estación
+                                    id_estacion1 = f_est_destinos[pos_est1]
+                                    id_estacion2 = f2_est_destinos[pos_est2]
+                                    if id_estacion2 != furgoneta.id_est_origen and id_estacion1 != furgoneta2.id_est_origen:
+                                        yield IntercambiarEstacionDescarga(id_furgoneta1=furgoneta.id, id_furgoneta2=furgoneta2.id, \
+                                                                        id_est1=id_estacion1, id_est2=id_estacion2, \
+                                                                            pos_est1=pos_est1, pos_est2=pos_est2)
             
             # QuitarEstacionDescarga #############################################################################
-            for pos_est in {0, 1}:
-                yield QuitarEstacionDescarga(id_furgoneta=furgoneta.id, pos_est=pos_est)
-    
+            if self.operadores_activos['QuitarEstacionDescarga']:
+                for pos_est in {0, 1}:
+                    yield QuitarEstacionDescarga(id_furgoneta=furgoneta.id, pos_est=pos_est)
+
+            # ReasignarFurgoneta #################################################################################
+            if self.operadores_activos['ReasignarFurgoneta']:
+                for est_o in self.info_estaciones:
+                    if est_o['index'] not in estaciones_carga and est_o['index'] not in estaciones_descarga:
+                        id_est_origen = est_o['index']
+                        for est_d1 in self.info_estaciones:
+                            if est_d1['index'] != id_est_origen and est_d1['index'] not in estaciones_carga and est_d1['index'] not in estaciones_descarga:
+                                id_est_dest1 = est_d1['index']
+                                for est_d2 in self.info_estaciones:
+                                    if est_d2['index'] != id_est_origen and est_d2['index'] != id_est_dest1 and est_d2['index'] not in estaciones_carga and est_d2['index'] not in estaciones_descarga:
+                                        id_est_dest2 = est_d2['index']
+                                        yield ReasignarFurgoneta(id_furgoneta=furgoneta.id, \
+                                                            id_est_origen=id_est_origen, \
+                                                                id_est_dest1=id_est_dest1, id_est_dest2=id_est_dest2)
+                                        
+            """if self.operadores_activos['ReasignarFurgoneta']:
+                lista_est_excedente: list = []
+                lista_est_faltante: list = []
+                for est in self.info_estaciones:
+                    if est['dif'] < 0:
+                        lista_est_faltante.append((est['dif'], est['index']))
+                    elif est['dif'] > 0 and est['disp'] > 0:
+                        lista_est_excedente.append((est['dif'], est['index']))"""
+            
+            # ReordenarFurgonetas ################################################################################                                               
+            if self.operadores_activos['ReordenarFurgonetas']:
+                for furgoneta2 in self.lista_furgonetas:
+                    if furgoneta.id < furgoneta2.id: # Para evitar que se repitan los intercambios
+                        yield ReordenarFurgonetas(id_furgoneta1=furgoneta.id, id_furgoneta2=furgoneta2.id)
+
     def apply_action(self, action: BicingOperator) -> 'EstadoBicing':
         new_state: EstadoBicing = self.copy()
         
@@ -268,6 +313,20 @@ class EstadoBicing(object):
                 furgoneta.id_est_dest1 = furgoneta.id_est_dest2
             else: # Quitar la segunda estación de descarga
                 furgoneta.id_est_dest2 = furgoneta.id_est_dest1
+
+        elif isinstance(action, ReasignarFurgoneta):
+            furgoneta = new_state.lista_furgonetas[action.id_furgoneta]
+            furgoneta.id_est_origen = action.id_est_origen
+            furgoneta.id_est_dest1 = action.id_est_dest1
+            furgoneta.id_est_dest2 = action.id_est_dest2
+        
+        elif isinstance(action, ReordenarFurgonetas):
+            furgoneta1 = new_state.lista_furgonetas[action.id_furgoneta1]
+            furgoneta2 = new_state.lista_furgonetas[action.id_furgoneta2]
+
+            furgoneta1.id_est_origen, furgoneta2.id_est_origen = furgoneta2.id_est_origen, furgoneta1.id_est_origen
+            furgoneta1.id_est_dest1, furgoneta2.id_est_dest1 = furgoneta2.id_est_dest1, furgoneta1.id_est_dest1
+            furgoneta1.id_est_dest2, furgoneta2.id_est_dest2 = furgoneta2.id_est_dest2, furgoneta1.id_est_dest2
 
         return new_state
 
