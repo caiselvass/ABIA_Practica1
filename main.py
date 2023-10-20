@@ -7,12 +7,10 @@ from aima.search import hill_climbing, simulated_annealing
 import random
 from typing import Union
 from timeit import timeit
+import time
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
-
-
-import time
 
 
 # Declaración de funciones
