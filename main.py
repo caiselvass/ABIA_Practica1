@@ -114,7 +114,7 @@ def generate_initial_state(opt: int = 0, semilla: Union[int, None] = None, opera
     state = EstadoBicing(lista_furgonetas=lista_furgonetas, operadores_activos=operadores_activos)
     return state
     
-def comparar_resultados_operadores(opt: int = 0,iteraciones: int = 10, semilla: Union[int, None] = None, operadores_activos: dict = {operator: True for operator in {'CambiarEstacionCarga', \
+def comparar_resultados_operadores(opt: int = 0, iteraciones: int = 10, semilla: Union[int, None] = None, operadores_activos: dict = {operator: True for operator in {'CambiarEstacionCarga', \
                                                                'CambiarEstacionCarga', \
                                                                 'IntercambiarEstacionCarga', \
                                                                     'CambiarOrdenDescarga', \
@@ -123,18 +123,30 @@ def comparar_resultados_operadores(opt: int = 0,iteraciones: int = 10, semilla: 
                                                                                 'QuitarEstacionDescarga', \
                                                                                     'ReasignarFurgoneta'}}):
 
-    beneficio = 0
+    tiempo_default = 0
+    tiempo_modificado = 0
+    beneficios_default = []
+    beneficios_modificado = []
+
     for _ in range(iteraciones):
         rng = random.Random(semilla)
         seed = rng.randint(0, 1_000_000)
-        #state1 = generate_initial_state(semilla=seed, )
+        
+        state1 = generate_initial_state(opt=opt, semilla=seed)
         state2 = generate_initial_state(opt=opt, semilla=seed, operadores_activos=operadores_activos)
-        #hill_climbing_1 = hill_climbing(ProblemaBicing(initial_state=state1))
+        
+        inici = time.time()
+        hill_climbing_1 = hill_climbing(ProblemaBicing(initial_state=state1))
+        tiempo_default += time.time() - inici
+        beneficios_default.append(hill_climbing_1.heuristic(coste_transporte=params.coste_transporte))
+        
+        inici = time.time()
         hill_climbing_2 = hill_climbing(ProblemaBicing(initial_state=state2))
-        #print(hill_climbing_1.heuristic(coste_transporte=params.coste_transporte), hill_climbing_2.heuristic(coste_transporte=params.coste_transporte))
-        beneficio += hill_climbing_2.heuristic(coste_transporte=params.coste_transporte)
-    
-    print("BENEFICIO MEDIO:", beneficio/iteraciones)
+        tiempo_modificado += time.time() - inici
+        beneficios_modificado.append(hill_climbing_2.heuristic(coste_transporte=params.coste_transporte))
+        
+    print(f"\nMEDIA DEFECTO: {sum(beneficios_default)/iteraciones} | TIEMPO DEFAULT: {tiempo_default/iteraciones} s | VARIANZA DEFAULT: {sum([(beneficio - (sum(beneficios_default)/iteraciones))**2 for beneficio in beneficios_default])/iteraciones}")
+    print(f"MEDIA MODIFICADO: {sum(beneficios_modificado)/iteraciones} | TIEMPO MODIFICADO: {tiempo_modificado/iteraciones} s) | VARIANZA MODIFICADO: {sum([(beneficio - (sum(beneficios_modificado)/iteraciones))**2 for beneficio in beneficios_modificado])/iteraciones}\n")
 
 # Programa principal
 if __name__ == '__main__':
@@ -180,16 +192,19 @@ if __name__ == '__main__':
 ##############################################################################################################################################
 
     # Experimento
-    """initial_state: EstadoBicing = generate_initial_state(opt = 0)
-    initial_state.heuristic(coste_transporte=params.coste_transporte)
-    initial_state.print_state(inicial=True)
-    initial_state.visualize_state(manhattan = True)
-
+    tiempo_inicio = time.time()
+    initial_state: EstadoBicing = generate_initial_state(opt = 2)
     problema_bicing = ProblemaBicing(initial_state)
     final_solution_HC = hill_climbing(problema_bicing)
+    initial_state.heuristic(coste_transporte=params.coste_transporte)
+    tiempo_final = time.time()
+    
+    initial_state.print_state(inicial=True)
+    #initial_state.visualize_state(manhattan = True)
     final_solution_HC.print_state()
-    print("SOLUCIONES COMPROBADAS:", problema_bicing.solutions_checked, "\n")
-    final_solution_HC.visualize_state(manhattan = True)"""
+    print(f"SOLUCIONES COMPROBADAS: {problema_bicing.solutions_checked}")
+    print(f"TIEMPO DE EJECUCIÓN: {tiempo_final - tiempo_inicio} s\n")
+    #final_solution_HC.visualize_state(manhattan = True)
 
     # Experimentos desactivando operadores:
     operadores_experimento = {'CambiarEstacionCarga': True, \
@@ -199,12 +214,9 @@ if __name__ == '__main__':
                                                 'CambiarEstacionDescarga': True, \
                                                     'IntercambiarEstacionDescarga': True, \
                                                         'QuitarEstacionDescarga': True, \
-                                                            'ReasignarFurgoneta': True}
+                                                            'ReasignarFurgoneta': False}
     
-    inici = time.time()
-    comparar_resultados_operadores(opt=0, operadores_activos=operadores_experimento)
-    final = time.time()
-    print("Tiempo de ejecución:", final - inici)
+    #comparar_resultados_operadores(opt=2, iteraciones=10, operadores_activos=operadores_experimento)
 
     # Obtener estadísticas y generar un box plot
     """times_hill_climbing = [timeit(lambda: hill_climbing(problema_bicing), number=1) for _ in range(15)]
@@ -218,10 +230,8 @@ if __name__ == '__main__':
     plt.title('Comparativa de Hill Climning y Simulated Annealing con Boxplots')
     plt.savefig('test.png')"""
 
-
-
-    """# Obtener estadísticas y generar un line plot
-    hill_climbing_value = None # HEM DE FER QUE HILL CLIMBING VALUE --> returns a list of objective function values over iterations:
+    # Obtener estadísticas y generar un line plot
+    """hill_climbing_value = None # HEM DE FER QUE HILL CLIMBING VALUE --> returns a list of objective function values over iterations:
     
     plt.figure(figsize=(10, 6))  # Tamaño de la figura
     plt.plot(hill_climbing_value, marker='o', linestyle='-')  # Creamos el gráfico

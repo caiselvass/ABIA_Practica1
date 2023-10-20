@@ -237,29 +237,8 @@ class EstadoBicing(object):
             if self.operadores_activos['QuitarEstacionDescarga']:
                 for pos_est in {0, 1}:
                     yield QuitarEstacionDescarga(id_furgoneta=furgoneta.id, pos_est=pos_est)
-
-            # ReasignarFurgoneta 1 ###############################################################################
-            if self.operadores_activos['ReasignarFurgoneta']:
-                lista_est_excedente: list = []
-                lista_est_faltante: list = []
-                
-                for est in self.info_estaciones:
-                    if est['dif'] < 0:
-                        lista_est_faltante.append(est['index'])
-                    elif est['dif'] > 0 and est['disp'] > 0:
-                        lista_est_excedente.append(est['index'])
-                
-                for est_o in lista_est_excedente:
-                    if est_o not in estaciones_carga and est_o not in estaciones_descarga:
-                        for est_d1 in lista_est_faltante:
-                            if est_d1 != est_o and est_d1 not in estaciones_carga and est_d1 not in estaciones_descarga:
-                                for est_d2 in lista_est_faltante:
-                                    if est_d2 != est_o and est_d2 != est_d1 and est_d2 not in estaciones_carga and est_d2 not in estaciones_descarga:
-                                        yield ReasignarFurgoneta(id_furgoneta=furgoneta.id, \
-                                                            id_est_origen=est_o, \
-                                                                id_est_dest1=est_d1, id_est_dest2=est_d2)
         
-            # ReasignarFurgoneta 2 ###############################################################################    
+            # ReasignarFurgoneta #################################################################################    
             if self.operadores_activos['ReasignarFurgoneta']:
                 lista_est_excedente: list = []
                 lista_est_faltante: list = []
