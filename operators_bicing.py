@@ -83,11 +83,3 @@ class ReasignarFurgoneta(BicingOperator, MultiBicingOperator):
         self.id_est_dest1 = id_est_dest1
         self.id_est_dest2 = id_est_dest2
 
-
-class ReordenarFurgonetas(BicingOperator):
-    """
-    Operador que cambia la información de una fugoneta por la de otra.
-    """
-    def __init__(self, id_furgoneta1: int, id_furgoneta2: int) -> None:
-        self.id_furgoneta1 = id_furgoneta1
-        self.id_furgoneta2 = id_furgoneta2

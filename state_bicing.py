@@ -12,8 +12,7 @@ from operators_bicing import BicingOperator, \
                     CambiarEstacionDescarga, \
                         IntercambiarEstacionDescarga, \
                             QuitarEstacionDescarga, \
-                                ReasignarFurgoneta, \
-                                    ReordenarFurgonetas
+                                ReasignarFurgoneta
 
 from pdb import set_trace as bp
 
@@ -239,35 +238,56 @@ class EstadoBicing(object):
                 for pos_est in {0, 1}:
                     yield QuitarEstacionDescarga(id_furgoneta=furgoneta.id, pos_est=pos_est)
 
-            # ReasignarFurgoneta #################################################################################
+            # ReasignarFurgoneta 1 ###############################################################################
             if self.operadores_activos['ReasignarFurgoneta']:
-                for est_o in self.info_estaciones:
-                    if est_o['index'] not in estaciones_carga and est_o['index'] not in estaciones_descarga:
-                        id_est_origen = est_o['index']
-                        for est_d1 in self.info_estaciones:
-                            if est_d1['index'] != id_est_origen and est_d1['index'] not in estaciones_carga and est_d1['index'] not in estaciones_descarga:
-                                id_est_dest1 = est_d1['index']
-                                for est_d2 in self.info_estaciones:
-                                    if est_d2['index'] != id_est_origen and est_d2['index'] != id_est_dest1 and est_d2['index'] not in estaciones_carga and est_d2['index'] not in estaciones_descarga:
-                                        id_est_dest2 = est_d2['index']
-                                        yield ReasignarFurgoneta(id_furgoneta=furgoneta.id, \
-                                                            id_est_origen=id_est_origen, \
-                                                                id_est_dest1=id_est_dest1, id_est_dest2=id_est_dest2)
-                                        
-            """if self.operadores_activos['ReasignarFurgoneta']:
                 lista_est_excedente: list = []
                 lista_est_faltante: list = []
+                
                 for est in self.info_estaciones:
                     if est['dif'] < 0:
-                        lista_est_faltante.append((est['dif'], est['index']))
+                        lista_est_faltante.append(est['index'])
                     elif est['dif'] > 0 and est['disp'] > 0:
-                        lista_est_excedente.append((est['dif'], est['index']))"""
+                        lista_est_excedente.append(est['index'])
+                
+                for est_o in lista_est_excedente:
+                    if est_o not in estaciones_carga and est_o not in estaciones_descarga:
+                        for est_d1 in lista_est_faltante:
+                            if est_d1 != est_o and est_d1 not in estaciones_carga and est_d1 not in estaciones_descarga:
+                                for est_d2 in lista_est_faltante:
+                                    if est_d2 != est_o and est_d2 != est_d1 and est_d2 not in estaciones_carga and est_d2 not in estaciones_descarga:
+                                        yield ReasignarFurgoneta(id_furgoneta=furgoneta.id, \
+                                                            id_est_origen=est_o, \
+                                                                id_est_dest1=est_d1, id_est_dest2=est_d2)
+        
+            # ReasignarFurgoneta 2 ###############################################################################    
+            if self.operadores_activos['ReasignarFurgoneta']:
+                lista_est_excedente: list = []
+                lista_est_faltante: list = []
+                
+                for est in self.info_estaciones:
+                    if est['dif'] < 0:
+                        lista_est_faltante.append(est['index'])
+                    elif est['dif'] > 0 and est['disp'] > 0:
+                        lista_est_excedente.append(est['index'])
+
+                n_estaciones_origen = len(lista_est_excedente)
+                n_estaciones_destino = len(lista_est_faltante)
+                
+                id_est_o = random.randint(0, n_estaciones_origen - 1)
+                while id_est_o in estaciones_carga:
+                    id_est_o = random.randint(0, n_estaciones_origen - 1)
+
+                id_est_origen = lista_est_excedente[id_est_o]
             
-            # ReordenarFurgonetas ################################################################################                                               
-            if self.operadores_activos['ReordenarFurgonetas']:
-                for furgoneta2 in self.lista_furgonetas:
-                    if furgoneta.id < furgoneta2.id: # Para evitar que se repitan los intercambios
-                        yield ReordenarFurgonetas(id_furgoneta1=furgoneta.id, id_furgoneta2=furgoneta2.id)
+                # Asignamos las estaciones de destino a la furgoneta
+                id_est_d1 = random.randint(0, n_estaciones_destino - 1)
+                id_est_d2 = random.randint(0, n_estaciones_destino - 1)
+
+                id_est_dest1 = lista_est_faltante[id_est_d1]
+                id_est_dest2 = lista_est_faltante[id_est_d2]
+                yield ReasignarFurgoneta(id_furgoneta=furgoneta.id, \
+                                                            id_est_origen=id_est_origen, \
+                                                                id_est_dest1=id_est_dest1, id_est_dest2=id_est_dest2)
 
     def apply_action(self, action: BicingOperator) -> 'EstadoBicing':
         new_state: EstadoBicing = self.copy()
@@ -319,14 +339,6 @@ class EstadoBicing(object):
             furgoneta.id_est_origen = action.id_est_origen
             furgoneta.id_est_dest1 = action.id_est_dest1
             furgoneta.id_est_dest2 = action.id_est_dest2
-        
-        elif isinstance(action, ReordenarFurgonetas):
-            furgoneta1 = new_state.lista_furgonetas[action.id_furgoneta1]
-            furgoneta2 = new_state.lista_furgonetas[action.id_furgoneta2]
-
-            furgoneta1.id_est_origen, furgoneta2.id_est_origen = furgoneta2.id_est_origen, furgoneta1.id_est_origen
-            furgoneta1.id_est_dest1, furgoneta2.id_est_dest1 = furgoneta2.id_est_dest1, furgoneta1.id_est_dest1
-            furgoneta1.id_est_dest2, furgoneta2.id_est_dest2 = furgoneta2.id_est_dest2, furgoneta1.id_est_dest2
 
         return new_state
 

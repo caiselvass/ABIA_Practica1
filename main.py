@@ -12,6 +12,9 @@ matplotlib.use('agg')
 import matplotlib.pyplot as plt
 
 
+import time
+
+
 # Declaración de funciones
 def generate_initial_state(opt: int = 0, semilla: Union[int, None] = None, operadores_activos: dict = {operator: True for operator in {'CambiarEstacionCarga', \
                                                                'CambiarEstacionCarga', \
@@ -20,8 +23,7 @@ def generate_initial_state(opt: int = 0, semilla: Union[int, None] = None, opera
                                                                         'CambiarEstacionDescarga', \
                                                                             'IntercambiarEstacionDescarga', \
                                                                                 'QuitarEstacionDescarga', \
-                                                                                    'ReasignarFurgoneta', \
-                                                                                        'ReordenarFurgonetas'}}) -> EstadoBicing:
+                                                                                    'ReasignarFurgoneta'}}) -> EstadoBicing:
     rng = random.Random(semilla)
     
     n_estaciones = params.n_estaciones
@@ -112,23 +114,27 @@ def generate_initial_state(opt: int = 0, semilla: Union[int, None] = None, opera
     state = EstadoBicing(lista_furgonetas=lista_furgonetas, operadores_activos=operadores_activos)
     return state
     
-def comparar_resultados_operadores(iteraciones: int = 10, operadores_activos: dict = {operator: True for operator in {'CambiarEstacionCarga', \
+def comparar_resultados_operadores(opt: int = 0,iteraciones: int = 10, semilla: Union[int, None] = None, operadores_activos: dict = {operator: True for operator in {'CambiarEstacionCarga', \
                                                                'CambiarEstacionCarga', \
                                                                 'IntercambiarEstacionCarga', \
                                                                     'CambiarOrdenDescarga', \
                                                                         'CambiarEstacionDescarga', \
                                                                             'IntercambiarEstacionDescarga', \
                                                                                 'QuitarEstacionDescarga', \
-                                                                                    'ReasignarFurgoneta', \
-                                                                                        'ReordenarFurgonetas'}}):
-    
+                                                                                    'ReasignarFurgoneta'}}):
+
+    beneficio = 0
     for _ in range(iteraciones):
-        semilla = random.randint(0, 1_000_000)
-        state1 = generate_initial_state(semilla=semilla)
-        state2 = generate_initial_state(semilla=semilla, operadores_activos=operadores_activos)
-        hill_climbing_1 = hill_climbing(ProblemaBicing(initial_state=state1))
+        rng = random.Random(semilla)
+        seed = rng.randint(0, 1_000_000)
+        #state1 = generate_initial_state(semilla=seed, )
+        state2 = generate_initial_state(opt=opt, semilla=seed, operadores_activos=operadores_activos)
+        #hill_climbing_1 = hill_climbing(ProblemaBicing(initial_state=state1))
         hill_climbing_2 = hill_climbing(ProblemaBicing(initial_state=state2))
-        print(hill_climbing_1.heuristic(coste_transporte=params.coste_transporte), hill_climbing_2.heuristic(coste_transporte=params.coste_transporte))
+        #print(hill_climbing_1.heuristic(coste_transporte=params.coste_transporte), hill_climbing_2.heuristic(coste_transporte=params.coste_transporte))
+        beneficio += hill_climbing_2.heuristic(coste_transporte=params.coste_transporte)
+    
+    print("BENEFICIO MEDIO:", beneficio/iteraciones)
 
 # Programa principal
 if __name__ == '__main__':
@@ -174,7 +180,7 @@ if __name__ == '__main__':
 ##############################################################################################################################################
 
     # Experimento
-    initial_state: EstadoBicing = generate_initial_state(opt = 0)
+    """initial_state: EstadoBicing = generate_initial_state(opt = 0)
     initial_state.heuristic(coste_transporte=params.coste_transporte)
     initial_state.print_state(inicial=True)
     initial_state.visualize_state(manhattan = True)
@@ -183,7 +189,7 @@ if __name__ == '__main__':
     final_solution_HC = hill_climbing(problema_bicing)
     final_solution_HC.print_state()
     print("SOLUCIONES COMPROBADAS:", problema_bicing.solutions_checked, "\n")
-    final_solution_HC.visualize_state(manhattan = True)
+    final_solution_HC.visualize_state(manhattan = True)"""
 
     # Experimentos desactivando operadores:
     operadores_experimento = {'CambiarEstacionCarga': True, \
@@ -193,10 +199,12 @@ if __name__ == '__main__':
                                                 'CambiarEstacionDescarga': True, \
                                                     'IntercambiarEstacionDescarga': True, \
                                                         'QuitarEstacionDescarga': True, \
-                                                            'ReasignarFurgoneta': True, \
-                                                                'ReordenarFurgonetas': False}
+                                                            'ReasignarFurgoneta': True}
     
-    #comparar_resultados_operadores(iteraciones=10, operadores_activos=operadores_experimento)
+    inici = time.time()
+    comparar_resultados_operadores(opt=0, operadores_activos=operadores_experimento)
+    final = time.time()
+    print("Tiempo de ejecución:", final - inici)
 
     # Obtener estadísticas y generar un box plot
     """times_hill_climbing = [timeit(lambda: hill_climbing(problema_bicing), number=1) for _ in range(15)]
