@@ -18,7 +18,7 @@ def comparar_resultados(opt: int = 0, iteraciones: int = 10, semilla: Union[int,
                                                                         'CambiarEstacionDescarga', \
                                                                             'IntercambiarEstacionDescarga', \
                                                                                 'QuitarEstacionDescarga', \
-                                                                                    'ReasignarFurgoneta'}}):
+                                                                                    'ReasignarFurgoneta'}}) -> None:
 
     tiempo_default, tiempo_modificado = 0, 0
     beneficios_default, beneficios_modificado = [], []
@@ -49,7 +49,7 @@ def comparar_operadores(opt: int = 0, iteraciones: int = 10, semilla: Union[int,
                                                                     'CambiarEstacionDescarga', \
                                                                         'IntercambiarEstacionDescarga', \
                                                                             'QuitarEstacionDescarga', \
-                                                                                'ReasignarFurgoneta'}}):
+                                                                                'ReasignarFurgoneta'}}) -> None:
 
     progreso = 0
     media_beneficios = []
@@ -113,6 +113,27 @@ def comparar_operadores(opt: int = 0, iteraciones: int = 10, semilla: Union[int,
 
     print(f"OPT: {opt} | ITERACIONES: {iteraciones} | HEURISTIC: {2 if params.coste_transporte else 1} | SEMILLA: {semilla}\n")
 
+def mejor_initial_state(initial_strategies: list = [0, 1, 2], iteraciones: int = 10) -> None:
+    results_accumulated = {strategy: 0 for strategy in initial_strategies}
+
+    for i in range(iteraciones):
+        print(f"PROGRESO: {(i/iteraciones)*100}%")
+        for strategy in initial_strategies:
+            initial_state = generate_initial_state(opt=strategy)
+            
+            problema_bicing = ProblemaBicing(initial_state)
+            final_solution_HC = hill_climbing(problema_bicing)
+            
+            heuristic_value = final_solution_HC.heuristic(coste_transporte=params.coste_transporte)
+            
+            results_accumulated[strategy] += heuristic_value
+
+    results_average = {strategy: total/iteraciones for strategy, total in results_accumulated.items()}
+
+    print(f"\nHEURÍSTICO {2 if params.coste_transporte else 1} | {iteraciones} ITERACIONES:")
+    for strategy, avg in results_average.items():
+        print(f"   * OPT: {strategy} --> BENEFICIO MEDIO: {avg} {'[BEST]' if avg == max(results_average.values()) else ''}")
+
 ##############################################################################################################################
 
 # Programa principal
@@ -143,7 +164,8 @@ if __name__ == "__main__":
                                                         'ReasignarFurgoneta': True}
     
     #comparar_resultados(opt=2, iteraciones=10, operadores_activos=operadores_experimento)
-    comparar_operadores(opt=2, semilla=random.randint(0, 1_000_000), iteraciones=1)
+    #comparar_operadores(opt=1, semilla=random.randint(0, 1_000_000), iteraciones=100)
+    mejor_initial_state(iteraciones=100)
 
 # Obtener estadísticas y generar un box plot
     """times_hill_climbing = [timeit(lambda: hill_climbing(problema_bicing), number=1) for _ in range(15)]
