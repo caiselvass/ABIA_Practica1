@@ -43,9 +43,7 @@ class EstadoBicing(object):
     def __str__(self) -> str:
         str_rutas = ""
         for furgoneta in self.lista_furgonetas:
-            km_trayecto1 = distancia_manhattan(self.get_coords_est(furgoneta.id_est_origen), self.get_coords_est(furgoneta.id_est_dest1)) / 1000
-            km_trayecto2 = distancia_manhattan(self.get_coords_est(furgoneta.id_est_dest1), self.get_coords_est(furgoneta.id_est_dest2)) / 1000
-            total_km = km_trayecto1 + km_trayecto2
+            km_trayecto1, km_trayecto2, total_km = self.get_distancias_furgoneta(furgoneta.id)
 
             primer_id = furgoneta.id_est_dest1
             segundo_id = furgoneta.id_est_dest2
@@ -69,6 +67,12 @@ class EstadoBicing(object):
 
         return f"\n\nRUTAS CALCULADAS:\n{str_rutas}"
     
+    def get_distancias_furgoneta(self, id_furgoneta: int) -> tuple[float, float, float]:
+        furgoneta = self.lista_furgonetas[id_furgoneta]
+        distancia_a_b = distancia_manhattan(self.get_coords_est(furgoneta.id_est_origen), self.get_coords_est(furgoneta.id_est_dest1)) / 1000
+        distancia_b_c = distancia_manhattan(self.get_coords_est(furgoneta.id_est_dest1), self.get_coords_est(furgoneta.id_est_dest2)) / 1000
+        return (distancia_a_b, distancia_b_c, distancia_a_b + distancia_b_c)
+    
     def get_coords_est(self, id_est) -> tuple:
         return (params.estaciones[id_est].coordX, params.estaciones[id_est].coordY)
     
@@ -78,7 +82,7 @@ class EstadoBicing(object):
                     'disp': est.num_bicicletas_no_usadas} \
                         for index, est in enumerate(params.estaciones)]
 
-    def realizar_ruta(self, id_furgoneta: int) -> float:
+    def realizar_ruta(self, id_furgoneta: int) -> None:
         furgoneta = self.lista_furgonetas[id_furgoneta]
         
         # Calculamos el número de bicicletas que se cargarán y descargarán

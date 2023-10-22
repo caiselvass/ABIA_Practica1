@@ -23,26 +23,33 @@ def comparar_resultados(opt: int = 0, iteraciones: int = 10, semilla: Union[int,
 
     tiempo_default, tiempo_modificado = 0, 0
     beneficios_default, beneficios_modificado = [], []
+    distancias_default, distancias_modificado = [], []
+    rng = random.Random(semilla)
 
-    for _ in range(iteraciones):
-        rng = random.Random(semilla)
+    for i in range(iteraciones):
+        print(f"PROGRESO: {(i/iteraciones)*100}%")
         seed = rng.randint(0, 1_000_000)
-        
         state1 = generate_initial_state(opt=opt, semilla=seed)
         state2 = generate_initial_state(opt=opt, semilla=seed, operadores_activos=operadores_activos)
         
         inici = time.time()
         hill_climbing_1 = hill_climbing(ProblemaBicing(initial_state=state1))
         tiempo_default += time.time() - inici
+        
         beneficios_default.append(hill_climbing_1.heuristic(coste_transporte=params.coste_transporte))
+        distancia_total_default = sum([hill_climbing_1.get_distancias_furgoneta(id_f)[2] for id_f in range(params.n_furgonetas)])
+        distancias_default.append(distancia_total_default)
         
         inici = time.time()
         hill_climbing_2 = hill_climbing(ProblemaBicing(initial_state=state2))
         tiempo_modificado += time.time() - inici
-        beneficios_modificado.append(hill_climbing_2.heuristic(coste_transporte=params.coste_transporte))
         
-    print(f"\nMEDIA DEFECTO: {sum(beneficios_default)/iteraciones} | TIEMPO DEFAULT: {tiempo_default/iteraciones} s | VARIANZA DEFAULT: {sum([(beneficio - (sum(beneficios_default)/iteraciones))**2 for beneficio in beneficios_default])/iteraciones}")
-    print(f"MEDIA MODIFICADO: {sum(beneficios_modificado)/iteraciones} | TIEMPO MODIFICADO: {tiempo_modificado/iteraciones} s) | VARIANZA MODIFICADO: {sum([(beneficio - (sum(beneficios_modificado)/iteraciones))**2 for beneficio in beneficios_modificado])/iteraciones}\n")
+        beneficios_modificado.append(hill_climbing_2.heuristic(coste_transporte=params.coste_transporte))
+        distancia_total_modificado = sum([hill_climbing_2.get_distancias_furgoneta(id_f)[2] for id_f in range(params.n_furgonetas)])
+        distancias_modificado.append(distancia_total_modificado)
+        
+    print(f"\nMEDIA DEFECTO: {sum(beneficios_default)/iteraciones} | TIEMPO DEFAULT: {(tiempo_default/iteraciones)*1000} ms | DISTANCIA DEFAULT: {sum(distancias_default)/iteraciones} | VARIANZA BENEF. DEFAULT: {sum([(beneficio - (sum(beneficios_default)/iteraciones))**2 for beneficio in beneficios_default])/iteraciones}")
+    print(f"MEDIA MODIFICADO: {sum(beneficios_modificado)/iteraciones} | TIEMPO MODIFICADO: {(tiempo_modificado/iteraciones)*1000} ms) | DISTANCIA MODIFICADO: {sum(distancias_modificado)/iteraciones} | VARIANZA BENEF.MODIFICADO: {sum([(beneficio - (sum(beneficios_modificado)/iteraciones))**2 for beneficio in beneficios_modificado])/iteraciones}\n")
 
 def comparar_operadores(opt: int = 0, iteraciones: int = 10, semilla: Union[int, None] = None, operadores: dict = {operator: True for operator in {'CambiarEstacionCarga', \
                                                             'IntercambiarEstacionCarga', \
@@ -107,10 +114,10 @@ def comparar_operadores(opt: int = 0, iteraciones: int = 10, semilla: Union[int,
                 break
         
         if all_true:
-            print(f"B: {exp[0]} | T: {exp[1]} | Nº: {exp[2]} | OP: ALL TRUE\n")
+            print(f"B: {exp[0]} | T: {exp[1]*1000} ms | Nº: {exp[2]} | OP: ALL TRUE\n")
         else:
             values = ['T' if v else 'F' for v in exp[3].values()]
-            print(f"B: {exp[0]} | T: {exp[1]} | Nº: {exp[2]} | OP: {values}\n")
+            print(f"B: {exp[0]} | T: {exp[1]*1000} ms | Nº: {exp[2]} | OP: {values}\n")
 
     print(f"OPT: {opt} | ITERACIONES: {iteraciones} | HEURISTIC: {2 if params.coste_transporte else 1} | SEMILLA: {semilla}\n")
 
@@ -139,24 +146,24 @@ def mejor_initial_state(initial_strategies: list = [0, 1, 2], iteraciones: int =
 
 # Programa principal
 if __name__ == "__main__":
-    
+
 # Experimento
-    tiempo_inicio = time.time()
-    initial_state: EstadoBicing = generate_initial_state(opt = 2)
+    """tiempo_inicio = time.time()
+    initial_state: EstadoBicing = generate_initial_state(opt=2)
     problema_bicing = ProblemaBicing(initial_state)
     final_solution_HC = hill_climbing(problema_bicing)
     initial_state.heuristic(coste_transporte=params.coste_transporte)
     tiempo_final = time.time()
     
     initial_state.print_state(inicial=True)
-    initial_state.visualize_state(manhattan = True)
+    #initial_state.visualize_state(manhattan = True)
     final_solution_HC.print_state()
     print(f"SOLUCIONES COMPROBADAS: {problema_bicing.solutions_checked}")
-    print(f"TIEMPO DE EJECUCIÓN: {tiempo_final - tiempo_inicio} s\n")
-    final_solution_HC.visualize_state(manhattan = True)"""
+    print(f"TIEMPO DE EJECUCIÓN: {1000*(tiempo_final - tiempo_inicio)} ms\n")
+    #final_solution_HC.visualize_state(manhattan = True)"""
 
 # Experimentos con operadores:
-    """operadores_experimento = {'CambiarEstacionCarga': True, \
+    operadores_experimento = {'CambiarEstacionCarga': True, \
                                     'IntercambiarEstacionCarga': True, \
                                         'CambiarOrdenDescarga': True, \
                                             'CambiarEstacionDescarga': True, \
@@ -164,9 +171,9 @@ if __name__ == "__main__":
                                                     'QuitarEstacionDescarga': True, \
                                                         'ReasignarFurgoneta': True}
     
-    #comparar_resultados(opt=2, iteraciones=10, operadores_activos=operadores_experimento)
+    comparar_resultados(opt=2, iteraciones=100, operadores_activos=operadores_experimento)
     #comparar_operadores(opt=1, semilla=random.randint(0, 1_000_000), iteraciones=100)
-    #mejor_initial_state(iteraciones=100)"""
+    #mejor_initial_state(iteraciones=100)
 
 # Obtener estadísticas y generar un box plot
     """times_hill_climbing = [timeit(lambda: hill_climbing(problema_bicing), number=1) for _ in range(15)]
@@ -189,4 +196,3 @@ if __name__ == "__main__":
     plt.xlabel("Iteraciones")  
     plt.ylabel("Coste")  
     plt.grid(True)  # Añadimos grid para una mejor ínterpretación"""
-
