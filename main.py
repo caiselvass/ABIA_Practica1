@@ -1,3 +1,4 @@
+from state_bicing import EstadoBicing
 from generate_initial_state_bicing import generate_initial_state
 from parameters_bicing import params
 from problem_bicing import ProblemaBicing
@@ -140,7 +141,7 @@ def mejor_initial_state(initial_strategies: list = [0, 1, 2], iteraciones: int =
 if __name__ == "__main__":
     
 # Experimento
-    """tiempo_inicio = time.time()
+    tiempo_inicio = time.time()
     initial_state: EstadoBicing = generate_initial_state(opt = 2)
     problema_bicing = ProblemaBicing(initial_state)
     final_solution_HC = hill_climbing(problema_bicing)
@@ -148,14 +149,14 @@ if __name__ == "__main__":
     tiempo_final = time.time()
     
     initial_state.print_state(inicial=True)
-    #initial_state.visualize_state(manhattan = True)
+    initial_state.visualize_state(manhattan = True)
     final_solution_HC.print_state()
     print(f"SOLUCIONES COMPROBADAS: {problema_bicing.solutions_checked}")
     print(f"TIEMPO DE EJECUCIÓN: {tiempo_final - tiempo_inicio} s\n")
-    #final_solution_HC.visualize_state(manhattan = True)"""
+    final_solution_HC.visualize_state(manhattan = True)"""
 
-# Experimentos desactivando operadores:
-    operadores_experimento = {'CambiarEstacionCarga': True, \
+# Experimentos con operadores:
+    """operadores_experimento = {'CambiarEstacionCarga': True, \
                                     'IntercambiarEstacionCarga': True, \
                                         'CambiarOrdenDescarga': True, \
                                             'CambiarEstacionDescarga': True, \
@@ -165,7 +166,7 @@ if __name__ == "__main__":
     
     #comparar_resultados(opt=2, iteraciones=10, operadores_activos=operadores_experimento)
     #comparar_operadores(opt=1, semilla=random.randint(0, 1_000_000), iteraciones=100)
-    mejor_initial_state(iteraciones=100)
+    #mejor_initial_state(iteraciones=100)"""
 
 # Obtener estadísticas y generar un box plot
     """times_hill_climbing = [timeit(lambda: hill_climbing(problema_bicing), number=1) for _ in range(15)]
