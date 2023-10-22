@@ -6,7 +6,6 @@ from furgoneta_bicing import Furgoneta
 
 # Declaración de funciones
 def generate_initial_state(opt: int = 0, semilla: Union[int, None] = None, operadores_activos: dict = {operator: True for operator in {'CambiarEstacionCarga', \
-                                                               'CambiarEstacionCarga', \
                                                                 'IntercambiarEstacionCarga', \
                                                                     'CambiarOrdenDescarga', \
                                                                         'CambiarEstacionDescarga', \
