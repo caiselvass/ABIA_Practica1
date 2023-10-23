@@ -271,6 +271,26 @@ class EstadoBicing(object):
                 yield ReasignarFurgoneta(id_furgoneta=furgoneta.id, \
                                                             id_est_origen=id_est_origen, \
                                                                 id_est_dest1=id_est_dest1, id_est_dest2=id_est_dest2)
+                
+            # ReasingarFurgoneta2 (sense random)
+            """if self.operadores_activos['ReasignarFurgoneta']:
+                lista_est_excedente: list = []
+                lista_est_faltante: list = []
+                
+                for est in self.info_estaciones:
+                    if est['dif'] < 0 and est['index'] not in estaciones_descarga:
+                        lista_est_faltante.append(est['index'])
+                    elif est['dif'] > 0 and est['disp'] > 0 and est['index'] not in estaciones_carga:
+                        lista_est_excedente.append(est['index'])
+
+                for est_o in lista_est_excedente:
+                    for est_dest1 in lista_est_faltante:
+                        if est_dest1 != est_o:
+                            for est_dest2 in lista_est_faltante:
+                                if est_dest2 != est_o and est_dest2 != est_dest1:
+                                    yield ReasignarFurgoneta(id_furgoneta=furgoneta.id, \
+                                                            id_est_origen=est_o, \
+                                                                id_est_dest1=est_dest1, id_est_dest2=est_dest2)"""
 
     def apply_action(self, action: BicingOperator) -> 'EstadoBicing':
         new_state: EstadoBicing = self.copy()
