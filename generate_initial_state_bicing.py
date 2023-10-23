@@ -11,7 +11,8 @@ def generate_initial_state(opt: int = 0, semilla: Union[int, None] = None, opera
                                                                         'CambiarEstacionDescarga', \
                                                                             'IntercambiarEstacionDescarga', \
                                                                                 'QuitarEstacionDescarga', \
-                                                                                    'ReasignarFurgoneta'}}) -> EstadoBicing:
+                                                                                    'ReasignarFurgoneta', \
+                                                                                        'ReducirNumeroBicicletasCarga'}}) -> EstadoBicing:
     rng = random.Random(semilla)
     
     n_estaciones = params.n_estaciones

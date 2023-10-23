@@ -12,7 +12,8 @@ from operators_bicing import BicingOperator, \
                     CambiarEstacionDescarga, \
                         IntercambiarEstacionDescarga, \
                             QuitarEstacionDescarga, \
-                                ReasignarFurgoneta
+                                ReasignarFurgoneta, \
+                                    ReducirNumeroBicicletasCarga
 
 from pdb import set_trace as bp
 
@@ -106,17 +107,28 @@ class EstadoBicing(object):
 
         # Calculamos el número de bicicletas que se cargarán y descargarán
         if furgoneta.id_est_dest1 != furgoneta.id_est_dest2:
-            bicicletas_carga = min(30, \
-                                    est_origen['disp'] if est_origen['disp'] > 0 else 0, \
-                                        (abs(est_destino1['dif']) if (est_destino1['dif'] < 0) else 0) + \
-                                            (abs(est_destino2['dif']) if (est_destino2['dif'] < 0) else 0))
+            max_bicis = min(30, \
+                            est_origen['disp'] if est_origen['disp'] > 0 else 0, \
+                                (abs(est_destino1['dif']) if (est_destino1['dif'] < 0) else 0) + \
+                                    (abs(est_destino2['dif']) if (est_destino2['dif'] < 0) else 0))
+            if furgoneta.reducir_bicicletas_carga:
+                #bicicletas_carga = (max_bicis//10)*10 if max_bicis % 10 < 4 else max_bicis
+                bicicletas_carga = max_bicis - furgoneta.reducir_bicicletas_carga if max_bicis - furgoneta.reducir_bicicletas_carga > 0 else 0
+            else:
+                bicicletas_carga = max_bicis
             bicicletas_descarga_1 = min(bicicletas_carga, abs(est_destino1['dif']) if (est_destino1['dif'] < 0) else 0)
             bicicletas_descarga_2 = bicicletas_carga - bicicletas_descarga_1
 
         else: # Caso en que se hace un movimiento "nulo"
-            bicicletas_carga = min(30, \
-                                    est_origen['disp'] if est_origen['disp'] > 0 else 0, \
-                                        abs(est_destino1['dif']) if (est_destino1['dif'] < 0) else 0)
+            max_bicis = min(30, \
+                            est_origen['disp'] if est_origen['disp'] > 0 else 0, \
+                                abs(est_destino1['dif']) if (est_destino1['dif'] < 0) else 0)
+            if furgoneta.reducir_bicicletas_carga:
+                #bicicletas_carga = (max_bicis//10)*10 if max_bicis % 10 < 4 else max_bicis
+                bicicletas_carga = max_bicis - furgoneta.reducir_bicicletas_carga if max_bicis - furgoneta.reducir_bicicletas_carga > 0 else 0
+            else:
+                bicicletas_carga = max_bicis
+
             bicicletas_descarga_1 = bicicletas_carga
             bicicletas_descarga_2 = 0
 
@@ -124,6 +136,8 @@ class EstadoBicing(object):
         furgoneta.bicicletas_cargadas = bicicletas_carga
         furgoneta.bicicletas_descargadas_1 = bicicletas_descarga_1
         furgoneta.bicicletas_descargadas_2 = bicicletas_descarga_2
+
+
 
     def calcular_balance_ruta_furgoneta(self, id_furgoneta: int) -> float:
         furgoneta = self.lista_furgonetas[id_furgoneta]
@@ -207,7 +221,7 @@ class EstadoBicing(object):
                                 yield IntercambiarEstacionCarga(id_furgoneta1=furgoneta.id, id_furgoneta2=furgoneta2.id)
 
             # CambiarOrdenDescarga ###############################################################################
-            if self.operadores_activos['CambiarOrdenDescarga']:
+            if params.coste_transporte and self.operadores_activos['CambiarOrdenDescarga']:
                 yield CambiarOrdenDescarga(id_furgoneta=furgoneta.id)
 
             # CambiarEstacionDescarga ############################################################################
@@ -291,6 +305,12 @@ class EstadoBicing(object):
                                     yield ReasignarFurgoneta(id_furgoneta=furgoneta.id, \
                                                             id_est_origen=est_o, \
                                                                 id_est_dest1=est_dest1, id_est_dest2=est_dest2)"""
+            
+            # ReducirNumeroBicicletasCarga ########################################################################
+            if params.coste_transporte and self.operadores_activos['ReducirNumeroBicicletasCarga']:
+                for bool_reduction in range(furgoneta.bicicletas_cargadas - (furgoneta.bicicletas_cargadas//10)*10 + 1):
+                    yield ReducirNumeroBicicletasCarga(id_furgoneta=furgoneta.id, \
+                                                        reducir_bicicletas_carga=bool_reduction)
 
     def apply_action(self, action: BicingOperator) -> 'EstadoBicing':
         new_state: EstadoBicing = self.copy()
@@ -342,6 +362,10 @@ class EstadoBicing(object):
             furgoneta.id_est_origen = action.id_est_origen
             furgoneta.id_est_dest1 = action.id_est_dest1
             furgoneta.id_est_dest2 = action.id_est_dest2
+
+        elif isinstance(action, ReducirNumeroBicicletasCarga):
+            furgoneta = new_state.lista_furgonetas[action.id_furgoneta]
+            furgoneta.reducir_bicicletas_carga = action.reducir_bicicletas_carga
 
         return new_state
 

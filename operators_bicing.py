@@ -83,3 +83,11 @@ class ReasignarFurgoneta(BicingOperator, MultiBicingOperator):
         self.id_est_dest1 = id_est_dest1
         self.id_est_dest2 = id_est_dest2
 
+
+class ReducirNumeroBicicletasCarga(BicingOperator):
+    """
+    Operador que reduce el número de bicicletas de una estación de carga.
+    """
+    def __init__(self, id_furgoneta: int, reducir_bicicletas_carga: bool) -> None:
+        self.id_furgoneta = id_furgoneta
+        self.reducir_bicicletas_carga = reducir_bicicletas_carga

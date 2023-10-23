@@ -19,9 +19,10 @@ def comparar_resultados(opt: int = 0, iteraciones: int = 10, semilla: Union[int,
                                                                         'CambiarEstacionDescarga', \
                                                                             'IntercambiarEstacionDescarga', \
                                                                                 'QuitarEstacionDescarga', \
-                                                                                    'ReasignarFurgoneta'}}) -> None:
+                                                                                    'ReasignarFurgoneta', \
+                                                                                        'ReducirNumeroBicicletasCarga'}}) -> None:
 
-    tiempo_default, tiempo_modificado = 0, 0
+    tiempo_default, tiempo_modificado, soluciones_expandidas_default, soluciones_expandidas_modificado = 0, 0, 0, 0
     beneficios_default, beneficios_modificado = [], []
     distancias_default, distancias_modificado = [], []
     rng = random.Random(semilla)
@@ -32,25 +33,29 @@ def comparar_resultados(opt: int = 0, iteraciones: int = 10, semilla: Union[int,
         state1 = generate_initial_state(opt=opt, semilla=seed)
         state2 = generate_initial_state(opt=opt, semilla=seed, operadores_activos=operadores_activos)
         
-        inici = time.time()
-        hill_climbing_1 = hill_climbing(ProblemaBicing(initial_state=state1))
-        tiempo_default += time.time() - inici
+        problema1 = ProblemaBicing(initial_state=state1)
+        inici1 = time.time()
+        hill_climbing_1 = hill_climbing(problema1)
+        tiempo_default += time.time() - inici1
         
+        soluciones_expandidas_default += problema1.solutions_checked
         beneficios_default.append(hill_climbing_1.heuristic(coste_transporte=params.coste_transporte))
         distancia_total_default = sum([hill_climbing_1.get_distancias_furgoneta(id_f)[2] for id_f in range(params.n_furgonetas)])
         distancias_default.append(distancia_total_default)
         
-        inici = time.time()
-        hill_climbing_2 = hill_climbing(ProblemaBicing(initial_state=state2))
-        tiempo_modificado += time.time() - inici
+        problema2 = ProblemaBicing(initial_state=state2)
+        inici2 = time.time()
+        hill_climbing_2 = hill_climbing(problema2)
+        tiempo_modificado += time.time() - inici2
         
+        soluciones_expandidas_modificado += problema2.solutions_checked
         beneficios_modificado.append(hill_climbing_2.heuristic(coste_transporte=params.coste_transporte))
         distancia_total_modificado = sum([hill_climbing_2.get_distancias_furgoneta(id_f)[2] for id_f in range(params.n_furgonetas)])
         distancias_modificado.append(distancia_total_modificado)
 
-    print(f"\nHEURISTIC: {2 if params.coste_transporte else 1} | OPT {opt} | ITERACIONES\n")
-    print(f"MEDIA DEFECTO: {sum(beneficios_default)/iteraciones} | TIEMPO DEFAULT: {(tiempo_default/iteraciones)*1000} ms | DISTANCIA DEFAULT: {sum(distancias_default)/iteraciones} | VARIANZA BENEF. DEFAULT: {sum([(beneficio - (sum(beneficios_default)/iteraciones))**2 for beneficio in beneficios_default])/iteraciones}")
-    print(f"MEDIA MODIFICADO: {sum(beneficios_modificado)/iteraciones} | TIEMPO MODIFICADO: {(tiempo_modificado/iteraciones)*1000} ms) | DISTANCIA MODIFICADO: {sum(distancias_modificado)/iteraciones} | VARIANZA BENEF.MODIFICADO: {sum([(beneficio - (sum(beneficios_modificado)/iteraciones))**2 for beneficio in beneficios_modificado])/iteraciones}\n")
+    print(f"\nHEURISTIC: {2 if params.coste_transporte else 1} | OPT: {opt} | ITERACIONES: {iteraciones}\n")
+    print(f"MEDIA DEFECTO: {sum(beneficios_default)/iteraciones} | TIEMPO DEFAULT: {(tiempo_default/iteraciones)*1000} ms | Nº = {int(soluciones_expandidas_default/iteraciones)} | DISTANCIA DEFAULT: {sum(distancias_default)/iteraciones} | VARIANZA BENEF. DEFAULT: {sum([(beneficio - (sum(beneficios_default)/iteraciones))**2 for beneficio in beneficios_default])/iteraciones}")
+    print(f"MEDIA MODIFICADO: {sum(beneficios_modificado)/iteraciones} | TIEMPO MODIFICADO: {(tiempo_modificado/iteraciones)*1000} ms) | Nº = {int(soluciones_expandidas_modificado/iteraciones)} | DISTANCIA MODIFICADO: {sum(distancias_modificado)/iteraciones} | VARIANZA BENEF.MODIFICADO: {sum([(beneficio - (sum(beneficios_modificado)/iteraciones))**2 for beneficio in beneficios_modificado])/iteraciones}\n")
 
 def comparar_operadores(opt: int = 0, iteraciones: int = 10, semilla: Union[int, None] = None, operadores: dict = {operator: True for operator in {'CambiarEstacionCarga', \
                                                             'IntercambiarEstacionCarga', \
@@ -58,52 +63,48 @@ def comparar_operadores(opt: int = 0, iteraciones: int = 10, semilla: Union[int,
                                                                     'CambiarEstacionDescarga', \
                                                                         'IntercambiarEstacionDescarga', \
                                                                             'QuitarEstacionDescarga', \
-                                                                                'ReasignarFurgoneta'}}) -> None:
+                                                                                'ReasignarFurgoneta', \
+                                                                                    'ReducirNumeroBicicletasCarga'}}) -> None:
 
     progreso = 0
     media_beneficios = []
 
-    operadores['CambiarEstacionCarga'] = True
-    for _ in range(2):
-        operadores['IntercambiarEstacionCarga'] = True
-        for _ in range(2):
-            operadores['CambiarOrdenDescarga'] = True
-            for _ in range(2):
-                operadores['CambiarEstacionDescarga'] = True
-                for _ in range(2):
-                    operadores['IntercambiarEstacionDescarga'] = True
-                    for _ in range(2):
-                        operadores['QuitarEstacionDescarga'] = True
-                        for _ in range(2):
-                            operadores['ReasignarFurgoneta'] = True
-                            for _ in range(2):
-                                progreso += 1
-                                print(f"PROGRESO: {(progreso/128)*100}%")
-                                
-                                beneficios_tmp = []
-                                tiempo, soluciones_expandidas = 0, 0
-                                rng = random.Random(semilla)
-                                for _ in range(iteraciones):
-                                    seed = rng.randint(0, 1_000_000)
+    for val8 in [True, False]:
+        operadores['ReducirNumeroBicicletasCarga'] = val8
+        for val7 in range(2):
+            operadores['CambiarEstacionCarga'] = val7
+            for val6 in range(2):
+                operadores['IntercambiarEstacionCarga'] = val6
+                for val5 in range(2):
+                    operadores['CambiarOrdenDescarga'] = val5
+                    for val4 in range(2):
+                        operadores['CambiarEstacionDescarga'] = val4
+                        for val3 in range(2):
+                            operadores['IntercambiarEstacionDescarga'] = val3
+                            for val2 in range(2):
+                                operadores['QuitarEstacionDescarga'] = val2
+                                for val1 in range(2):
+                                    operadores['ReasignarFurgoneta'] = val1
                                     
-                                    state = generate_initial_state(opt=opt, semilla=seed, operadores_activos=operadores)
+                                    progreso += 1
+                                    print(f"PROGRESO: {(progreso/256)*100}%")
                                     
-                                    problema = ProblemaBicing(initial_state=state)
-                                    inici = time.time()
-                                    hill_climbing_1 = hill_climbing(problema)
-                                    tiempo += time.time() - inici
-                                    soluciones_expandidas += problema.solutions_checked
-                                    beneficios_tmp.append(hill_climbing_1.heuristic(coste_transporte=params.coste_transporte))
-                                
-                                media_beneficios.append((sum(beneficios_tmp)/iteraciones, tiempo/iteraciones, int(soluciones_expandidas/iteraciones), {k: v for k, v in operadores.items()}))
-                                
-                                operadores['ReasignarFurgoneta'] = False
-                            operadores['QuitarEstacionDescarga'] = False
-                        operadores['IntercambiarEstacionDescarga'] = False
-                    operadores['CambiarEstacionDescarga'] = False
-                operadores['CambiarOrdenDescarga'] = False
-            operadores['IntercambiarEstacionCarga'] = False
-        operadores['CambiarEstacionCarga'] = False
+                                    beneficios_tmp = []
+                                    tiempo, soluciones_expandidas = 0, 0
+                                    rng = random.Random(semilla)
+                                    for _ in range(iteraciones):
+                                        seed = rng.randint(0, 1_000_000)
+                                        
+                                        state = generate_initial_state(opt=opt, semilla=seed, operadores_activos=operadores)
+                                        
+                                        problema = ProblemaBicing(initial_state=state)
+                                        inici = time.time()
+                                        hill_climbing_1 = hill_climbing(problema)
+                                        tiempo += time.time() - inici
+                                        soluciones_expandidas += problema.solutions_checked
+                                        beneficios_tmp.append(hill_climbing_1.heuristic(coste_transporte=params.coste_transporte))
+                                    
+                                    media_beneficios.append((sum(beneficios_tmp)/iteraciones, tiempo/iteraciones, int(soluciones_expandidas/iteraciones), {k: v for k, v in operadores.items()}))
 
     media_beneficios.sort(key=lambda x: x[0])
         
@@ -120,7 +121,7 @@ def comparar_operadores(opt: int = 0, iteraciones: int = 10, semilla: Union[int,
             values = ['T' if v else 'F' for v in exp[3].values()]
             print(f"B: {exp[0]} | T: {exp[1]*1000} ms | Nº: {exp[2]} | OP: {values}\n")
 
-    print(f"OPT: {opt} | ITERACIONES: {iteraciones} | HEURISTIC: {2 if params.coste_transporte else 1} | SEMILLA: {semilla}\n")
+    print(f"OPT: {opt} | ITERACIONES: {iteraciones} | HEURÍSTICO: {2 if params.coste_transporte else 1} | SEMILLA: {semilla}\n")
 
 def mejor_initial_state(initial_strategies: list = [0, 1, 2], iteraciones: int = 10) -> None:
     results_accumulated = {strategy: 0 for strategy in initial_strategies}
@@ -149,11 +150,11 @@ def mejor_initial_state(initial_strategies: list = [0, 1, 2], iteraciones: int =
 if __name__ == "__main__":
 
 # Experimento
-    """tiempo_inicio = time.time()
-    initial_state: EstadoBicing = generate_initial_state(opt=2)
-    problema_bicing = ProblemaBicing(initial_state)
-    final_solution_HC = hill_climbing(problema_bicing)
+    """initial_state: EstadoBicing = generate_initial_state(opt=2)
     initial_state.heuristic(coste_transporte=params.coste_transporte)
+    problema_bicing = ProblemaBicing(initial_state)
+    tiempo_inicio = time.time()
+    final_solution_HC = hill_climbing(problema_bicing)
     tiempo_final = time.time()
     
     initial_state.print_state(inicial=True)
@@ -170,23 +171,41 @@ if __name__ == "__main__":
                                             'CambiarEstacionDescarga': True, \
                                                 'IntercambiarEstacionDescarga': True, \
                                                     'QuitarEstacionDescarga': True, \
-                                                        'ReasignarFurgoneta': True}
+                                                        'ReasignarFurgoneta': True, \
+                                                            'ReducirNumeroBicicletasCarga': False}
     
     comparar_resultados(opt=2, iteraciones=100, operadores_activos=operadores_experimento)
-    #comparar_operadores(opt=1, semilla=random.randint(0, 1_000_000), iteraciones=100)
+    #comparar_operadores(opt=2, semilla=random.randint(0, 1_000_000), iteraciones=100)
     #mejor_initial_state(iteraciones=100)
 
 # Obtener estadísticas y generar un box plot
-    """times_hill_climbing = [timeit(lambda: hill_climbing(problema_bicing), number=1) for _ in range(15)]
-    times_simulated_annealing = [timeit(lambda: simulated_annealing(problema_bicing), number=1) for _ in range(15)]
+    """iterations_plot = 100
+    initial_state = generate_initial_state(opt=2)
+    initial_state.heuristic(coste_transporte=params.coste_transporte)
+    problema_bicing = ProblemaBicing(initial_state)
+    times_hill_climbing = [timeit(lambda: hill_climbing(problema_bicing), number=1) for _ in range(iterations_plot)]
+    benefits_hill_climbing = [hill_climbing(problema_bicing).heuristic(coste_transporte=params.coste_transporte) for _ in range(iterations_plot)]
+    #times_simulated_annealing = [timeit(lambda: simulated_annealing(problema_bicing), number=1) for _ in range(15)]
     
-    data_to_plot = [times_hill_climbing, times_simulated_annealing]
-    labels=['hill_climbing', 'simulated_annealing']
+    times_to_plot = [times_hill_climbing]
+    #times_to_plot = [times_hill_climbing, times_simulated_annealing]
+    labels=['Hill Climbing']
+    #labels=['hill_climbing', 'simulated_annealing']
         
-    plt.boxplot(data_to_plot, labels=labels)
-    plt.ylabel('Tiempo de ejecución (s)')
-    plt.title('Comparativa de Hill Climning y Simulated Annealing con Boxplots')
-    plt.savefig('test.png')"""
+    plt.boxplot(times_hill_climbing, labels=labels)
+    plt.ylabel('Tiempo de ejecución (ms)')
+    plt.title('Resultados Hill Climbing (100 iteraciones)')
+    #plt.title('Comparativa de Hill Climning y Simulated Annealing con Boxplots')
+    plt.savefig('times.png')
+
+    benefits_to_plot = [benefits_hill_climbing]
+    plt.boxplot(benefits_hill_climbing, labels=labels)
+    plt.ylabel('Beneficio total (€)')
+    plt.title('Resultados Hill Climbing (100 iteraciones)')
+    #plt.title('Comparativa de Hill Climbing y Simulated Annealing con Boxplots')
+    plt.savefig('benefits.png')"""
+
+
 
 # Obtener estadísticas y generar un line plot
     """hill_climbing_value = None # HEM DE FER QUE HILL CLIMBING VALUE --> returns a list of objective function values over iterations:
