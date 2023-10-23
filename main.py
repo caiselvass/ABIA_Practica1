@@ -203,21 +203,21 @@ if __name__ == "__main__":
 
     # Gráfico para beneficios
     plt.boxplot(benefits_HC)
-    plt.title("Boxplot de los beneficios con Hill Climbing (100 iteraciones)")
+    plt.title(f"Boxplot de los beneficios con Hill Climbing ({iterations_plot} iteraciones)")
     plt.ylabel("Beneficio (€)")
     plt.savefig("beneficios.png")
     plt.close()  # Cierra la figura para que podamos crear la siguiente
 
     # Gráfico para tiempos
     plt.boxplot(times_HC)
-    plt.title("Boxplot de los tiempos con Hill Climbing (100 iteraciones)")
+    plt.title(f"Boxplot de los tiempos con Hill Climbing ({iterations_plot} iteraciones)")
     plt.ylabel("Tiempo (ms)")
     plt.savefig("tiempos.png")
     plt.close()  # Cierra la figura para que podamos crear la siguiente
 
     # Gráfico para distancias
     plt.boxplot(distances_HC)
-    plt.title("Boxplot de las distancias totales con Hill Climbing (100 iteraciones)")
+    plt.title(f"Boxplot de las distancias totales con Hill Climbing ({iterations_plot} iteraciones)")
     plt.ylabel("Distancia (km)")
     plt.savefig("distancias.png")
     plt.close()  # Cierra la figura para que podamos crear la siguiente
