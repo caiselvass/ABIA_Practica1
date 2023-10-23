@@ -190,7 +190,7 @@ if __name__ == "__main__":
         
         inicio = time.time()
         resultado_HC = hill_climbing(problema_bicing)
-        times_HC.append(time.time() - inicio)
+        times_HC.append((time.time() - inicio)*1000)
         benefits_HC.append(resultado_HC.heuristic(coste_transporte=params.coste_transporte))
         distances_HC.append(sum([resultado_HC.get_distancias_furgoneta(id_f)[2] for id_f in range(params.n_furgonetas)]))
 
