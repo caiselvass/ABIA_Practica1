@@ -179,39 +179,47 @@ if __name__ == "__main__":
     #mejor_initial_state(iteraciones=100)
 
 # Obtener estadísticas y generar un box plot
-    """iterations_plot = 100
-
+    iterations_plot = 100
+    times_HC = [], benefits_HC = [], distances_HC = []
+    times_SA = [], benefits_SA = [], distances_SA = []
     for _ in range(iterations_plot):
         initial_state = generate_initial_state(opt=2)
         initial_state.heuristic(coste_transporte=params.coste_transporte)
         problema_bicing = ProblemaBicing(initial_state)
 
-        times_hill_climbing = [], benefits_HC = [], distances_HC = []
-        #times_simulated_annealing = [], benefits_SA = [], distances_SA = []
         
-        hill_climbing(problema_bicing), number=1)
-        hill_climbing(problema_bicing).heuristic(coste_transporte=params.coste_transporte)
+        inicio = time.time()
+        resultado_HC = hill_climbing(problema_bicing)
+        times_HC.append(time.time() - inicio)
+        benefits_HC.append(resultado_HC.heuristic(coste_transporte=params.coste_transporte))
+        distances_HC.append(sum([resultado_HC.get_distancias_furgoneta(id_f)[2] for id_f in range(params.n_furgonetas)]))
 
-        #times_simulated_annealing = [timeit(lambda: simulated_annealing(problema_bicing), number=1) for _ in range(15)]
-    
-    times_to_plot = [times_hill_climbing]
-    #times_to_plot = [times_hill_climbing, times_simulated_annealing]
-    labels=['Hill Climbing']
-    #labels=['hill_climbing', 'simulated_annealing']
-        
-    plt.boxplot(times_hill_climbing, labels=labels)
-    plt.ylabel('Tiempo de ejecución (ms)')
-    plt.title('Resultados Hill Climbing (100 iteraciones)')
-    #plt.title('Comparativa de Hill Climning y Simulated Annealing con Boxplots')
-    plt.savefig('times.png')
+        #inicio = time.time()
+        #resultado_SA = simulated_annealing(problema_bicing)
+        #times_SA.append(time.time() - inicio)
+        #benefits_SA.append(resultado_SA.heuristic(coste_transporte=params.coste_transporte))
+        #distances_SA.append(sum([resultado_SA.get_distancias_furgoneta(id_f)[2] for id_f in range(params.n_furgonetas)]))
 
-    benefits_to_plot = [benefits_hill_climbing]
-    plt.boxplot(benefits_hill_climbing, labels=labels)
-    plt.ylabel('Beneficio total (€)')
-    plt.title('Resultados Hill Climbing (100 iteraciones)')
-    #plt.title('Comparativa de Hill Climbing y Simulated Annealing con Boxplots')
-    plt.savefig('benefits.png')"""
+    # Gráfico para beneficios
+    plt.boxplot(benefits_HC)
+    plt.title("Boxplot de los beneficios con Hill Climbing (100 iteraciones)")
+    plt.ylabel("Beneficio (€)")
+    plt.savefig("beneficios.png")
+    plt.close()  # Cierra la figura para que podamos crear la siguiente
 
+    # Gráfico para tiempos
+    plt.boxplot(times_HC)
+    plt.title("Boxplot de los tiempos con Hill Climbing (100 iteraciones)")
+    plt.ylabel("Tiempo (ms)")
+    plt.savefig("tiempos.png")
+    plt.close()  # Cierra la figura para que podamos crear la siguiente
+
+    # Gráfico para distancias
+    plt.boxplot(distances_HC)
+    plt.title("Boxplot de las distancias totales con Hill Climbing (100 iteraciones)")
+    plt.ylabel("Distancia (km)")
+    plt.savefig("distancias.png")
+    plt.close()  # Cierra la figura para que podamos crear la siguiente
 
 
 # Obtener estadísticas y generar un line plot
