@@ -69,6 +69,10 @@ class EstadoBicing(object):
         return f"\n\nRUTAS CALCULADAS:\n{str_rutas}"
     
     def get_distancias_furgoneta(self, id_furgoneta: int) -> tuple[float, float, float]:
+        """
+        Función que retorna las distancias de cada trayecto de la furgoneta y su suma total.
+        Return: (distancia_a_b, distancia_b_c, distancia_a_b + distancia_b_c)
+        """
         furgoneta = self.lista_furgonetas[id_furgoneta]
         distancia_a_b = distancia_manhattan(self.get_coords_est(furgoneta.id_est_origen), self.get_coords_est(furgoneta.id_est_dest1)) / 1000
         distancia_b_c = distancia_manhattan(self.get_coords_est(furgoneta.id_est_dest1), self.get_coords_est(furgoneta.id_est_dest2)) / 1000
@@ -136,8 +140,6 @@ class EstadoBicing(object):
         furgoneta.bicicletas_cargadas = bicicletas_carga
         furgoneta.bicicletas_descargadas_1 = bicicletas_descarga_1
         furgoneta.bicicletas_descargadas_2 = bicicletas_descarga_2
-
-
 
     def calcular_balance_ruta_furgoneta(self, id_furgoneta: int) -> float:
         furgoneta = self.lista_furgonetas[id_furgoneta]
@@ -221,7 +223,7 @@ class EstadoBicing(object):
                                 yield IntercambiarEstacionCarga(id_furgoneta1=furgoneta.id, id_furgoneta2=furgoneta2.id)
 
             # CambiarOrdenDescarga ###############################################################################
-            if params.coste_transporte and self.operadores_activos['CambiarOrdenDescarga']:
+            if self.operadores_activos['CambiarOrdenDescarga']:
                 yield CambiarOrdenDescarga(id_furgoneta=furgoneta.id)
 
             # CambiarEstacionDescarga ############################################################################
@@ -307,7 +309,7 @@ class EstadoBicing(object):
                                                                 id_est_dest1=est_dest1, id_est_dest2=est_dest2)"""
             
             # ReducirNumeroBicicletasCarga ########################################################################
-            if params.coste_transporte and self.operadores_activos['ReducirNumeroBicicletasCarga']:
+            if self.operadores_activos['ReducirNumeroBicicletasCarga']:
                 for bool_reduction in range(furgoneta.bicicletas_cargadas - (furgoneta.bicicletas_cargadas//10)*10 + 1):
                     yield ReducirNumeroBicicletasCarga(id_furgoneta=furgoneta.id, \
                                                         reducir_bicicletas_carga=bool_reduction)

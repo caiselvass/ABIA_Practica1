@@ -15,6 +15,10 @@ def generate_initial_state(opt: int = 0, semilla: Union[int, None] = None, opera
                                                                                         'ReducirNumeroBicicletasCarga'}}) -> EstadoBicing:
     rng = random.Random(semilla)
     
+    if not params.coste_transporte:
+        operadores_activos['ReducirNumeroBicicletasCarga'] = False
+        operadores_activos['CambiarOrdenDescarga'] = False
+
     n_estaciones = params.n_estaciones
     n_furgonetas = params.n_furgonetas
     

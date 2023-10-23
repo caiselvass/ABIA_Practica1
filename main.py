@@ -172,20 +172,27 @@ if __name__ == "__main__":
                                                 'IntercambiarEstacionDescarga': True, \
                                                     'QuitarEstacionDescarga': True, \
                                                         'ReasignarFurgoneta': True, \
-                                                            'ReducirNumeroBicicletasCarga': False}
+                                                            'ReducirNumeroBicicletasCarga': True}
     
-    comparar_resultados(opt=2, iteraciones=100, operadores_activos=operadores_experimento)
-    #comparar_operadores(opt=2, semilla=random.randint(0, 1_000_000), iteraciones=100)
+    comparar_resultados(opt=1, iteraciones=100, operadores_activos=operadores_experimento)
+    #comparar_operadores(opt=1, semilla=random.randint(0, 1_000_000), iteraciones=100)
     #mejor_initial_state(iteraciones=100)
 
 # Obtener estadísticas y generar un box plot
     """iterations_plot = 100
-    initial_state = generate_initial_state(opt=2)
-    initial_state.heuristic(coste_transporte=params.coste_transporte)
-    problema_bicing = ProblemaBicing(initial_state)
-    times_hill_climbing = [timeit(lambda: hill_climbing(problema_bicing), number=1) for _ in range(iterations_plot)]
-    benefits_hill_climbing = [hill_climbing(problema_bicing).heuristic(coste_transporte=params.coste_transporte) for _ in range(iterations_plot)]
-    #times_simulated_annealing = [timeit(lambda: simulated_annealing(problema_bicing), number=1) for _ in range(15)]
+
+    for _ in range(iterations_plot):
+        initial_state = generate_initial_state(opt=2)
+        initial_state.heuristic(coste_transporte=params.coste_transporte)
+        problema_bicing = ProblemaBicing(initial_state)
+
+        times_hill_climbing = [], benefits_HC = [], distances_HC = []
+        #times_simulated_annealing = [], benefits_SA = [], distances_SA = []
+        
+        hill_climbing(problema_bicing), number=1)
+        hill_climbing(problema_bicing).heuristic(coste_transporte=params.coste_transporte)
+
+        #times_simulated_annealing = [timeit(lambda: simulated_annealing(problema_bicing), number=1) for _ in range(15)]
     
     times_to_plot = [times_hill_climbing]
     #times_to_plot = [times_hill_climbing, times_simulated_annealing]
