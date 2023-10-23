@@ -28,7 +28,7 @@ def comparar_resultados(opt: int = 0, iteraciones: int = 10, semilla: Union[int,
     rng = random.Random(semilla)
 
     for i in range(iteraciones):
-        print(f"PROGRESO: {(i/iteraciones)*100}%")
+        print(f"PROGRESO: {(i/iteraciones)*100}%", end='\r')
         seed = rng.randint(0, 1_000_000)
         state1 = generate_initial_state(opt=opt, semilla=seed)
         state2 = generate_initial_state(opt=opt, semilla=seed, operadores_activos=operadores_activos)
@@ -87,7 +87,7 @@ def comparar_operadores(opt: int = 0, iteraciones: int = 10, semilla: Union[int,
                                     operadores['ReasignarFurgoneta'] = val1
                                     
                                     progreso += 1
-                                    print(f"PROGRESO: {(progreso/256)*100}%")
+                                    print(f"PROGRESO: {(progreso/256)*100}%", end='\r')
                                     
                                     beneficios_tmp = []
                                     tiempo, soluciones_expandidas = 0, 0
@@ -182,7 +182,8 @@ if __name__ == "__main__":
     iterations_plot = 100
     times_HC, benefits_HC, distances_HC = [], [], []
     times_SA, benefits_SA, distances_SA = [], [], []
-    for _ in range(iterations_plot):
+    for i in range(iterations_plot):
+        print(f"PROGRESO: {(i/iterations_plot)*100}%", end='\r')
         initial_state = generate_initial_state(opt=2)
         initial_state.heuristic(coste_transporte=params.coste_transporte)
         problema_bicing = ProblemaBicing(initial_state)
