@@ -1,4 +1,4 @@
-from estaciones_bicing import Estaciones, Estacion
+from abia_bicing import Estaciones, Estacion
 
 class Parameters:
 	def __init__(self, n_estaciones: int, n_bicicletas: int, n_furgonetas: int, seed: int, coste_transporte: bool = True) -> None:
