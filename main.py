@@ -174,14 +174,14 @@ if __name__ == "__main__":
                                                         'ReasignarFurgoneta': True, \
                                                             'ReducirNumeroBicicletasCarga': True}
     
-    comparar_resultados(opt=1, iteraciones=100, operadores_activos=operadores_experimento)
+    #comparar_resultados(opt=1, iteraciones=100, operadores_activos=operadores_experimento)
     #comparar_operadores(opt=1, semilla=random.randint(0, 1_000_000), iteraciones=100)
     #mejor_initial_state(iteraciones=100)
 
 # Obtener estadísticas y generar un box plot
     iterations_plot = 100
-    times_HC = [], benefits_HC = [], distances_HC = []
-    times_SA = [], benefits_SA = [], distances_SA = []
+    times_HC, benefits_HC, distances_HC = [], [], []
+    times_SA, benefits_SA, distances_SA = [], [], []
     for _ in range(iterations_plot):
         initial_state = generate_initial_state(opt=2)
         initial_state.heuristic(coste_transporte=params.coste_transporte)
