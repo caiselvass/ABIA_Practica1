@@ -31,7 +31,7 @@ def comparar_operadores_default(opt: int = 0, iteraciones: int = 10, semilla: Un
     rng = random.Random(semilla)
 
     for i in range(iteraciones):
-        print(f"PROGRESO: {(i/iteraciones)*100}%", end='\r')
+        print(f"PROGRESO: {round((i/iteraciones)*100, 1)}%", end='\r')
         seed = rng.randint(0, 1_000_000)
         state1 = generate_initial_state(opt=opt, semilla=seed)
         state2 = generate_initial_state(opt=opt, semilla=seed, operadores_activos=operadores_activos)
@@ -93,7 +93,7 @@ def comparar_all_operadores(opt: int = 0, iteraciones: int = 10, semilla: Union[
                                     operadores['ReasignarFurgoneta'] = val1
                                     
                                     progreso += 1
-                                    print(f"PROGRESO: {(progreso/256)*100}%", end='\r')
+                                    print(f"PROGRESO: {round((progreso/256)*100, 1)}%", end='\r')
                                     
                                     beneficios_tmp = []
                                     tiempo, soluciones_expandidas = 0, 0
@@ -233,7 +233,7 @@ def encontrar_parametros_SA():
 if __name__ == "__main__":
 
 # Experimento individual
-    initial_state: EstadoBicing = generate_initial_state(opt=2)
+    """initial_state: EstadoBicing = generate_initial_state(opt=2)
     initial_state.heuristic(coste_transporte=params.coste_transporte)
     problema_bicing = ProblemaBicing(initial_state)
     tiempo_inicio = time.time()
@@ -245,10 +245,10 @@ if __name__ == "__main__":
     final_solution_HC.print_state()
     print(f"SOLUCIONES COMPROBADAS: {problema_bicing.solutions_checked}")
     print(f"TIEMPO DE EJECUCIÓN: {1000*(tiempo_final - tiempo_inicio)} ms\n")
-    #final_solution_HC.visualize_state(manhattan = True)
+    #final_solution_HC.visualize_state(manhattan = True)"""
 
 # Experimentos con operadores:
-    """operadores_experimento = {'CambiarEstacionCarga': True, \
+    operadores_experimento = {'CambiarEstacionCarga': True, \
                                     'IntercambiarEstacionCarga': True, \
                                         'CambiarOrdenDescarga': True, \
                                             'CambiarEstacionDescarga': True, \
@@ -257,9 +257,9 @@ if __name__ == "__main__":
                                                         'ReasignarFurgoneta': True, \
                                                             'ReducirNumeroBicicletasCarga': True}
     
-    comparar_operadores_default(opt=1, iteraciones=100, operadores_activos=operadores_experimento)
-    comparar_all_operadores(opt=1, semilla=random.randint(0, 1_000_000), iteraciones=100)
-    mejor_initial_state(iteraciones=100)"""
+    comparar_operadores_default(opt=2, iteraciones=100, operadores_activos=operadores_experimento)
+    #comparar_all_operadores(opt=1, semilla=random.randint(0, 1_000_000), iteraciones=100)
+    #mejor_initial_state(iteraciones=100)
 
 # Experimentos de HC vs SA + Obtención de estadísticas y generación de gráficas
     # Schedule para Simulated Annealing
