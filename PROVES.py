@@ -1,1 +1,0 @@
-hola = [{'index': 0, 'dif': -15, 'disp': 0}, {'index': 1, 'dif': 26, 'disp': 17}, {'index': 2, 'dif': -19, 'disp': 0}, {'index': 3, 'dif': 15, 'disp': 17}, {'index': 4, 'dif': 22, 'disp': 19}] 
