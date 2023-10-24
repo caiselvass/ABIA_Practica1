@@ -153,7 +153,7 @@ def mejor_initial_state(initial_strategies: list = [0, 1, 2], iteraciones: int =
     for strategy, avg in results_average.items():
         print(f"   * OPT: {strategy} --> BENEFICIO MEDIO: {avg} {'[BEST]' if avg == max(results_average.values()) else ''}")
 
-def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int = 10, opt: int = 2, schedule_sa: Union[None, function] = None) -> None:
+def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int = 10, opt: int = 2, schedule_sa = None) -> None:
     """
     Realiza los experimentos con Hill Climbing y Simulated Annealing y genera las gráficas de los resultados.
     Se pueden desactivar los experimentos que no se quieran realizar.
@@ -233,7 +233,7 @@ def encontrar_parametros_SA():
 if __name__ == "__main__":
 
 # Experimento individual
-    """initial_state: EstadoBicing = generate_initial_state(opt=2)
+    initial_state: EstadoBicing = generate_initial_state(opt=2)
     initial_state.heuristic(coste_transporte=params.coste_transporte)
     problema_bicing = ProblemaBicing(initial_state)
     tiempo_inicio = time.time()
@@ -245,7 +245,7 @@ if __name__ == "__main__":
     final_solution_HC.print_state()
     print(f"SOLUCIONES COMPROBADAS: {problema_bicing.solutions_checked}")
     print(f"TIEMPO DE EJECUCIÓN: {1000*(tiempo_final - tiempo_inicio)} ms\n")
-    #final_solution_HC.visualize_state(manhattan = True)"""
+    #final_solution_HC.visualize_state(manhattan = True)
 
 # Experimentos con operadores:
     """operadores_experimento = {'CambiarEstacionCarga': True, \
@@ -270,4 +270,4 @@ if __name__ == "__main__":
         return k * exp(-lam * t)
     
     # Realizar experimento y generar gráficas
-    comparar_resultados_HC_SA(opt=2, HC=True, SA=True, iterations=100, schedule_sa=exp_schedule)
+    #comparar_resultados_HC_SA(opt=2, HC=True, SA=True, iterations=100, schedule_sa=exp_schedule)

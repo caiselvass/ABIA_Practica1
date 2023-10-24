@@ -96,13 +96,24 @@ def generate_initial_state(opt: int = 0, semilla: Union[int, None] = None, opera
         
         lista_est_excedente.sort(reverse=True)
         lista_est_faltante.sort()
-
+        
+        # Assignación tipo 1
         j = 0
         for i, furgoneta in enumerate(lista_furgonetas):
             furgoneta.id_est_origen = lista_est_excedente[i][1]
             furgoneta.id_est_dest1 = lista_est_faltante[j][1]
             furgoneta.id_est_dest2 = lista_est_faltante[j+1][1]
             j += 2
-                
+
+        # Assignación tipo 2
+        """j = 0
+        for i, furgoneta in enumerate(lista_furgonetas):
+            furgoneta.id_est_origen = lista_est_excedente[i][1]
+    
+            furgoneta.id_est_dest1 = lista_est_faltante[j][1]
+            furgoneta.id_est_dest2 = lista_est_faltante[j+params.n_furgonetas][1]
+            j += 1"""
+
+    
     state = EstadoBicing(lista_furgonetas=lista_furgonetas, operadores_activos=operadores_activos)
     return state
