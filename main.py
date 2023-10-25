@@ -152,6 +152,22 @@ def mejor_initial_state(initial_strategies: list = [0, 1, 2], iteraciones: int =
     print(f"\nHEURÍSTICO {2 if params.coste_transporte else 1} | {iteraciones} ITERACIONES:")
     for strategy, avg in results_average.items():
         print(f"   * OPT: {strategy} --> BENEFICIO MEDIO: {avg} {'[BEST]' if avg == max(results_average.values()) else ''}")
+    
+    # Creación del boxplot
+    strategies_names = [str(s) for s in initial_strategies]
+    data_to_plot = [results_accumulated[s] for s in initial_strategies]
+
+    fig, ax = plt.subplots()
+    ax.boxplot(data_to_plot)
+
+    ax.set_xticklabels(strategies_names)
+    ax.set_title('Comparación de Coste Heurístico por Estrategia de Solución Inicial')
+    ax.set_xlabel('Estrategias de Solución Inicial')
+    ax.set_ylabel('Coste Heurístico')
+
+    plt.savefig('experimento2.png', format='png')  # Guardar gráfico como PNG
+    plt.show()
+
 
 def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int = 10, opt: int = 2, schedule_sa = None) -> None:
     """
