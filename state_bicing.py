@@ -256,15 +256,13 @@ class EstadoBicing(object):
                 for est in self.info_estaciones:
                     if est['dif'] < 0:
                         lista_est_faltante.append(est['index'])
-                    elif est['dif'] > 0 and est['disp'] > 0:
+                    elif est['dif'] > 0 and est['disp'] > 0 and est['index'] not in estaciones_carga:
                         lista_est_excedente.append(est['index'])
 
                 n_estaciones_origen = len(lista_est_excedente)
                 n_estaciones_destino = len(lista_est_faltante)
                 
                 id_est_o = random.randint(0, n_estaciones_origen - 1)
-                while id_est_o in estaciones_carga:
-                    id_est_o = random.randint(0, n_estaciones_origen - 1)
 
                 id_est_origen = lista_est_excedente[id_est_o]
             
@@ -286,7 +284,7 @@ class EstadoBicing(object):
                 for est in self.info_estaciones:
                     if est['dif'] < 0:
                         lista_est_faltante.append((est['dif'], est['index']))
-                    elif est['dif'] > 0 and est['disp'] > 0:
+                    elif est['dif'] > 0 and est['disp'] > 0 and est['index'] not in estaciones_carga:
                         lista_est_excedente.append((est['dif'], est['index']))
                 
                 lista_est_excedente.sort(reverse=True)

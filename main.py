@@ -263,7 +263,7 @@ if __name__ == "__main__":
     
 
 # Experimento 1 ----------------------------------------------------------------------------------
-    comparar_all_operadores(opt=2, semilla=random.randint(0, 1_000_000), iteraciones=10)
+    comparar_all_operadores(opt=0, semilla=random.randint(0, 1_000_000), iteraciones=50)
 
 # Experimento 2 ----------------------------------------------------------------------------------
     #mejor_initial_state(iteraciones=100)
