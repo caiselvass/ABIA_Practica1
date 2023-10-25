@@ -180,7 +180,7 @@ def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int 
 
         # Experimento con Simulated Annealing
         if SA:
-            problema_bicing.mode_simulated_annealing = True
+            problema_bicing.mode_simulated_annealing = True # Indicamos al problema que estamos en modo Simulated Annealing
             inicio_SA = time.time()
             resultado_SA = simulated_annealing(problema_bicing, schedule=schedule_sa)
             tiempos_SA.append((time.time() - inicio_SA)*1000)
@@ -270,7 +270,7 @@ if __name__ == "__main__":
     def exp_schedule(t, k: float=0, lam: float=0):
         return k * exp(-lam * t)
     
-    #comparar_resultados_HC_SA(opt=2, HC=True, SA=True, iterations=100, schedule_sa=exp_schedule)
+    comparar_resultados_HC_SA(opt=2, HC=True, SA=True, iterations=1, schedule_sa=exp_schedule)
 
 # Experimento 4 ----------------------------------------------------------------------------------
     
