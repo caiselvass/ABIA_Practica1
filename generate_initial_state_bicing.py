@@ -5,19 +5,10 @@ from state_bicing import EstadoBicing
 from furgoneta_bicing import Furgoneta
 
 # Declaración de funciones
-def generate_initial_state(opt: int = 0, semilla: Union[int, None] = None, operadores_activos: dict = {operator: True for operator in {'CambiarEstacionCarga', \
-                                                                'IntercambiarEstacionCarga', \
-                                                                    'CambiarOrdenDescarga', \
-                                                                        'CambiarEstacionDescarga', \
-                                                                            'IntercambiarEstacionDescarga', \
-                                                                                'QuitarEstacionDescarga', \
-                                                                                    'ReasignarFurgoneta', \
-                                                                                        'ReducirNumeroBicicletasCarga'}}) -> EstadoBicing:
+def generate_initial_state(opt: int = 0, \
+                           semilla: Union[int, None] = None, \
+                            operadores_activos: dict = {operator: True for operator in {'CambiarOrdenDescarga', 'IntercambiarEstacionDescarga', 'IntercambiarEstacionCarga' 'ReasignarFurgonetaRandom', 'ReasignarFurgonetaInformado'}}) -> EstadoBicing:
     rng = random.Random(semilla)
-    
-    if not params.coste_transporte:
-        operadores_activos['ReducirNumeroBicicletasCarga'] = False
-        operadores_activos['CambiarOrdenDescarga'] = False
 
     n_estaciones = params.n_estaciones
     n_furgonetas = params.n_furgonetas

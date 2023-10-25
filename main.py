@@ -7,24 +7,16 @@ import random
 from math import exp
 from typing import Union
 import time
+from timeit import timeit
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 
 # Declaración de funciones
-def comparar_operadores_default(opt: int = 0, iteraciones: int = 10, semilla: Union[int, None] = None, operadores_activos: dict = {operator: True for operator in {'CambiarEstacionCarga', \
-                                                               'CambiarEstacionCarga', \
-                                                                'IntercambiarEstacionCarga', \
-                                                                    'CambiarOrdenDescarga', \
-                                                                        'CambiarEstacionDescarga', \
-                                                                            'IntercambiarEstacionDescarga', \
-                                                                                'QuitarEstacionDescarga', \
-                                                                                    'ReasignarFurgoneta', \
-                                                                                        'ReducirNumeroBicicletasCarga'}}) -> None:
+def comparar_operadores_default(opt: int = 0, iteraciones: int = 10, semilla: Union[int, None] = None, operadores_activos: dict = {operator: True for operator in {'CambiarOrdenDescarga', 'IntercambiarEstacionDescarga', 'IntercambiarEstacionCarga' 'ReasignarFurgonetaRandom', 'ReasignarFurgonetaInformado'}}) -> None:
     """
     Comparación de los resultados de Hill Climbing con los operadores por defecto y con los operadores modificados introducidos en el parámetro operadores_activos.
     """
-
     tiempo_default, tiempo_modificado, soluciones_expandidas_default, soluciones_expandidas_modificado = 0, 0, 0, 0
     beneficios_default, beneficios_modificado = [], []
     distancias_default, distancias_modificado = [], []
@@ -60,57 +52,47 @@ def comparar_operadores_default(opt: int = 0, iteraciones: int = 10, semilla: Un
     print(f"MEDIA DEFECTO: {sum(beneficios_default)/iteraciones} | TIEMPO DEFAULT: {(tiempo_default/iteraciones)*1000} ms | Nº = {int(soluciones_expandidas_default/iteraciones)} | DISTANCIA DEFAULT: {sum(distancias_default)/iteraciones} | VARIANZA BENEF. DEFAULT: {sum([(beneficio - (sum(beneficios_default)/iteraciones))**2 for beneficio in beneficios_default])/iteraciones}")
     print(f"MEDIA MODIFICADO: {sum(beneficios_modificado)/iteraciones} | TIEMPO MODIFICADO: {(tiempo_modificado/iteraciones)*1000} ms) | Nº = {int(soluciones_expandidas_modificado/iteraciones)} | DISTANCIA MODIFICADO: {sum(distancias_modificado)/iteraciones} | VARIANZA BENEF.MODIFICADO: {sum([(beneficio - (sum(beneficios_modificado)/iteraciones))**2 for beneficio in beneficios_modificado])/iteraciones}\n")
 
-def comparar_all_operadores(opt: int = 0, iteraciones: int = 10, semilla: Union[int, None] = None, operadores: dict = {operator: True for operator in {'CambiarEstacionCarga', \
-                                                            'IntercambiarEstacionCarga', \
-                                                                'CambiarOrdenDescarga', \
-                                                                    'CambiarEstacionDescarga', \
-                                                                        'IntercambiarEstacionDescarga', \
-                                                                            'QuitarEstacionDescarga', \
-                                                                                'ReasignarFurgoneta', \
-                                                                                    'ReducirNumeroBicicletasCarga'}}) -> None:
+def comparar_all_operadores(opt: int = 0, \
+                            iteraciones: int = 10, \
+                                semilla: Union[int, None] = None, \
+                                    operadores: dict = {operator: True for operator in {'CambiarOrdenDescarga', 'IntercambiarEstacionDescarga', 'IntercambiarEstacionCarga' 'ReasignarFurgonetaRandom', 'ReasignarFurgonetaInformado'}}) -> None:
     """
     Comprueba todas las posibles combinaciones de operadores y escribe en pantalla los resultados ordenados de mayor a menor beneficio medio.
     """
-
+    
+    # Los únicos operadores que podemos activar/desactivar son CambiarOrdenDescarga, IntercambiarEstacionDescarga, IntercambiarEstacionCarga ReasignarFurgonetaRandom y ReasignarFurgonetaInformado
     progreso = 0
     media_beneficios = []
-
-    for val8 in [True, False]:
-        operadores['ReducirNumeroBicicletasCarga'] = val8
-        for val7 in [True, False]:
-            operadores['CambiarEstacionCarga'] = val7
-            for val6 in [True, False]:
-                operadores['IntercambiarEstacionCarga'] = val6
-                for val5 in [True, False]:
-                    operadores['CambiarOrdenDescarga'] = val5
-                    for val4 in [True, False]:
-                        operadores['CambiarEstacionDescarga'] = val4
-                        for val3 in [True, False]:
-                            operadores['IntercambiarEstacionDescarga'] = val3
-                            for val2 in [True, False]:
-                                operadores['QuitarEstacionDescarga'] = val2
-                                for val1 in [True, False]:
-                                    operadores['ReasignarFurgoneta'] = val1
-                                    
-                                    progreso += 1
-                                    print(f"PROGRESO: {round((progreso/256)*100, 1)}%", end='\r')
-                                    
-                                    beneficios_tmp = []
-                                    tiempo, soluciones_expandidas = 0, 0
-                                    rng = random.Random(semilla)
-                                    for _ in range(iteraciones):
-                                        seed = rng.randint(0, 1_000_000)
-                                        
-                                        state = generate_initial_state(opt=opt, semilla=seed, operadores_activos=operadores)
-                                        
-                                        problema = ProblemaBicing(initial_state=state)
-                                        inici = time.time()
-                                        hill_climbing_1 = hill_climbing(problema)
-                                        tiempo += time.time() - inici
-                                        soluciones_expandidas += problema.solutions_checked
-                                        beneficios_tmp.append(hill_climbing_1.heuristic(coste_transporte=params.coste_transporte))
-                                    
-                                    media_beneficios.append((sum(beneficios_tmp)/iteraciones, tiempo/iteraciones, int(soluciones_expandidas/iteraciones), {k: v for k, v in operadores.items()}))
+    for val5 in [True, False]:
+        operadores['ReasignarFurgonetaInformado'] = val5
+        for val4 in [True, False]:
+            operadores['IntercambiarEstacionCarga'] = val4
+            for val3 in [True, False]:
+                operadores['CambiarOrdenDescarga'] = val3
+                for val2 in [True, False]:
+                    operadores['ReasignarFurgonetaRandom'] = val2
+                    for val1 in [True, False]:
+                        operadores['IntercambiarEstacionDescarga'] = val1
+                        
+                        progreso += 1
+                        print(f"PROGRESO: {round((progreso/(2**len(operadores)))*100, 1)}%", end='\r')
+                        
+                        beneficios_tmp = []
+                        tiempo, soluciones_expandidas = 0, 0
+                        rng = random.Random(semilla)
+                        for _ in range(iteraciones):
+                            seed = rng.randint(0, 1_000_000)
+                            
+                            state = generate_initial_state(opt=opt, semilla=seed, operadores_activos=operadores)
+                            
+                            problema = ProblemaBicing(initial_state=state)
+                            inici = time.time()
+                            hill_climbing_1 = hill_climbing(problema)
+                            tiempo += time.time() - inici
+                            soluciones_expandidas += problema.solutions_checked
+                            beneficios_tmp.append(hill_climbing_1.heuristic(coste_transporte=params.coste_transporte))
+                        
+                        media_beneficios.append((sum(beneficios_tmp)/iteraciones, tiempo/iteraciones, int(soluciones_expandidas/iteraciones), {k: v for k, v in operadores.items()}))
 
     media_beneficios.sort(key=lambda x: x[0])
         
@@ -120,7 +102,7 @@ def comparar_all_operadores(opt: int = 0, iteraciones: int = 10, semilla: Union[
             if not v:
                 all_true = False
                 break
-        
+
         if all_true:
             print(f"B: {exp[0]} | T: {exp[1]*1000} ms | Nº: {exp[2]} | OP: ALL TRUE\n")
         else:
@@ -168,8 +150,7 @@ def mejor_initial_state(initial_strategies: list = [0, 1, 2], iteraciones: int =
     plt.savefig('experimento2.png', format='png')  # Guardar gráfico como PNG
     plt.show()
 
-
-def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int = 10, opt: int = 2, schedule_sa = None) -> None:
+def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int = 10, opt: int = 2, schedule_sa = None, beneficios_bool: bool = True, tiempos_bool: bool = True, distancias_bool: bool = True) -> None:
     """
     Realiza los experimentos con Hill Climbing y Simulated Annealing y genera las gráficas de los resultados.
     Se pueden desactivar los experimentos que no se quieran realizar.
@@ -220,32 +201,31 @@ def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int 
         distancias.append(distancias_SA)
 
     # Gráfico para los beneficios
-    plt.boxplot(beneficios, labels=labels)
-    plt.title(f"Beneficios totales ({iterations} ejecuciones)")
-    plt.ylabel("Beneficio (€)")
-    plt.savefig("beneficios.png")
-    plt.close()  # Cierra la figura para que podamos crear la siguiente
+    if beneficios_bool:
+        plt.boxplot(beneficios, labels=labels)
+        plt.title(f"Beneficios totales ({iterations} ejecuciones)")
+        plt.ylabel("Beneficio (€)")
+        plt.savefig("beneficios.png")
+        plt.close()  # Cierra la figura para que podamos crear la siguiente
 
     # Gráfico para los tiempos
-    plt.boxplot(tiempos, labels=labels)
-    plt.title(f"Tiempos de ejecución ({iterations} ejecuciones)")
-    plt.ylabel("Tiempo (ms)")
-    plt.savefig("tiempos.png")
-    plt.close()  # Cierra la figura para que podamos crear la siguiente
+    if tiempos_bool:
+        plt.boxplot(tiempos, labels=labels)
+        plt.title(f"Tiempos de ejecución ({iterations} ejecuciones)")
+        plt.ylabel("Tiempo (ms)")
+        plt.savefig("tiempos.png")
+        plt.close()  # Cierra la figura para que podamos crear la siguiente
 
     # Gráfico para las distancias
-    plt.boxplot(distancias, labels=labels)
-    plt.title(f"Distancias totales ({iterations} ejecuciones)")
-    plt.ylabel("Distancia (km)")
-    plt.savefig("distancias.png")
-    plt.close()  # Cierra la figura para que podamos crear la siguiente
+    if distancias_bool:
+        plt.boxplot(distancias, labels=labels)
+        plt.title(f"Distancias totales ({iterations} ejecuciones)")
+        plt.ylabel("Distancia (km)")
+        plt.savefig("distancias.png")
+        plt.close()  # Cierra la figura para que podamos crear la siguiente
 
 def encontrar_parametros_SA() -> tuple:
     pass
-
-def evolucion_tiempo_ejecucion() -> None:
-    pass
-
 
 ##############################################################################################################################
 
@@ -268,14 +248,11 @@ if __name__ == "__main__":
     #final_solution_HC.visualize_state(manhattan = True)"""
 
 # Pruebas con operadores:
-    """operadores_experimento = {'CambiarEstacionCarga': True, \
-                                    'IntercambiarEstacionCarga': True, \
-                                        'CambiarOrdenDescarga': True, \
-                                            'CambiarEstacionDescarga': True, \
-                                                'IntercambiarEstacionDescarga': True, \
-                                                    'QuitarEstacionDescarga': True, \
-                                                        'ReasignarFurgoneta': True, \
-                                                            'ReducirNumeroBicicletasCarga': True}
+    """operadores_experimento = {'CambiarOrdenDescarga': True, \
+                              'IntercambiarEstacionDescarga': True, \
+                                'IntercambiarEstacionCarga': True, \
+                                    'ReasignarFurgonetaRandom': True, \
+                                        'ReasignarFurgonetaInformado': True}
     
     comparar_operadores_default(opt=2, iteraciones=100, operadores_activos=operadores_experimento)"""
     

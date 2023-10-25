@@ -5,22 +5,19 @@ from typing import Generator
 import pygame
 import random
 from operators_bicing import BicingOperator, \
-    MultiBicingOperator, \
         CambiarEstacionCarga, \
             IntercambiarEstacionCarga, \
                 CambiarOrdenDescarga, \
                     CambiarEstacionDescarga, \
                         IntercambiarEstacionDescarga, \
-                            QuitarEstacionDescarga, \
-                                ReasignarFurgoneta, \
-                                    ReducirNumeroBicicletasCarga
-
-from pdb import set_trace as bp
+                                ReasignarFurgonetaRandom, \
+                                    ReasignarFurgonetaInformado, \
+                                        ReducirNumeroBicicletasCarga
 
 class EstadoBicing(object):
     def __init__(self, lista_furgonetas: list[Furgoneta], \
                  operadores_activos: dict = {}) -> None:
-        self.operadores_activos = operadores_activos
+        self.operadores_activos: dict = operadores_activos
         self.info_estaciones: list[dict] = [{'index': index, \
                                     'dif': est.num_bicicletas_next - est.demanda, \
                                     'disp': est.num_bicicletas_no_usadas} \
@@ -106,10 +103,9 @@ class EstadoBicing(object):
                             est_origen['disp'] if est_origen['disp'] > 0 else 0, \
                                 (abs(est_destino1['dif']) if (est_destino1['dif'] < 0) else 0) + \
                                     (abs(est_destino2['dif']) if (est_destino2['dif'] < 0) else 0))
-            if furgoneta.reducir_bicicletas_carga:
-                #bicicletas_carga = (max_bicis//10)*10 if max_bicis % 10 < 4 else max_bicis
+            if furgoneta.reducir_bicicletas_carga: # Diferente de 0
                 bicicletas_carga = max_bicis - furgoneta.reducir_bicicletas_carga if max_bicis - furgoneta.reducir_bicicletas_carga > 0 else 0
-            else:
+            else: # Igual a 0
                 bicicletas_carga = max_bicis
             bicicletas_descarga_1 = min(bicicletas_carga, abs(est_destino1['dif']) if (est_destino1['dif'] < 0) else 0)
             bicicletas_descarga_2 = bicicletas_carga - bicicletas_descarga_1
@@ -118,10 +114,9 @@ class EstadoBicing(object):
             max_bicis = min(30, \
                             est_origen['disp'] if est_origen['disp'] > 0 else 0, \
                                 abs(est_destino1['dif']) if (est_destino1['dif'] < 0) else 0)
-            if furgoneta.reducir_bicicletas_carga:
-                #bicicletas_carga = (max_bicis//10)*10 if max_bicis % 10 < 4 else max_bicis
+            if furgoneta.reducir_bicicletas_carga: # Diferente de 0
                 bicicletas_carga = max_bicis - furgoneta.reducir_bicicletas_carga if max_bicis - furgoneta.reducir_bicicletas_carga > 0 else 0
-            else:
+            else: # Igual a 0
                 bicicletas_carga = max_bicis
 
             bicicletas_descarga_1 = bicicletas_carga
@@ -210,10 +205,9 @@ class EstadoBicing(object):
         # Generate all the possible actions for the current state of the problem:
         for furgoneta in self.lista_furgonetas:
             # CambiarEstacionCarga ###############################################################################
-            if self.operadores_activos['CambiarEstacionCarga']:
-                for est in self.info_estaciones:
-                    if est['index'] not in estaciones_carga and est['index'] != furgoneta.id_est_dest1 and est['index'] != furgoneta.id_est_dest2:
-                        yield CambiarEstacionCarga(id_furgoneta=furgoneta.id, \
+            for est in self.info_estaciones:
+                if est['index'] not in estaciones_carga and est['index'] != furgoneta.id_est_dest1 and est['index'] != furgoneta.id_est_dest2:
+                    yield CambiarEstacionCarga(id_furgoneta=furgoneta.id, \
                                                     id_est=est['index'])
                         
             # IntercambiarEstacionCarga ##########################################################################
@@ -229,18 +223,17 @@ class EstadoBicing(object):
                 yield CambiarOrdenDescarga(id_furgoneta=furgoneta.id)
 
             # CambiarEstacionDescarga ############################################################################
-            if self.operadores_activos['CambiarEstacionDescarga']:
-                for est in self.info_estaciones:
-                    if est['index'] != furgoneta.id_est_origen:
-                        for pos_est in {0, 1}:
-                            # No hacemos comprobación de que la nueva estación de descarga sea distinta a la anterior porque este 
-                            # caso ya se trata en el método asignar_bicicletas_carga_descarga()
-                            yield CambiarEstacionDescarga(id_furgoneta=furgoneta.id, \
-                                                        id_est=est['index'], \
-                                                            pos_est=pos_est)
+            for est in self.info_estaciones:
+                if est['index'] != furgoneta.id_est_origen:
+                    for pos_est in {0, 1}:
+                        # No hacemos comprobación de que la nueva estación de descarga sea distinta a la anterior porque este 
+                        # caso ya se trata en el método asignar_bicicletas_carga_descarga()
+                        yield CambiarEstacionDescarga(id_furgoneta=furgoneta.id, \
+                                                    id_est=est['index'], \
+                                                        pos_est=pos_est)
             
             # IntercambiarEstacionDescarga #######################################################################
-            if self.operadores_activos['IntercambiarEstacionDescarga']:    
+            if self.operadores_activos['IntercambiarEstacionDescarga']:
                 for furgoneta2 in self.lista_furgonetas:
                     if furgoneta.id < furgoneta2.id: # Para evitar que se repitan los intercambios
                         f_est_destinos = (furgoneta.id_est_dest1, furgoneta.id_est_dest2)
@@ -254,13 +247,8 @@ class EstadoBicing(object):
                                         yield IntercambiarEstacionDescarga(id_furgoneta1=furgoneta.id, id_furgoneta2=furgoneta2.id, \
                                                                         id_est1=id_estacion1, id_est2=id_estacion2, \
                                                                             pos_est1=pos_est1, pos_est2=pos_est2)
-            
-            # QuitarEstacionDescarga #############################################################################
-            if self.operadores_activos['QuitarEstacionDescarga']:
-                for pos_est in {0, 1}:
-                    yield QuitarEstacionDescarga(id_furgoneta=furgoneta.id, pos_est=pos_est)
         
-            # ReasignarFurgoneta #################################################################################    
+            # ReasignarFurgonetaRandom ############################################################################  
             if self.operadores_activos['ReasignarFurgoneta']:
                 lista_est_excedente: list = []
                 lista_est_faltante: list = []
@@ -286,15 +274,32 @@ class EstadoBicing(object):
 
                 id_est_dest1 = lista_est_faltante[id_est_d1]
                 id_est_dest2 = lista_est_faltante[id_est_d2]
-                yield ReasignarFurgoneta(id_furgoneta=furgoneta.id, \
+                yield ReasignarFurgonetaRandom(id_furgoneta=furgoneta.id, \
                                                             id_est_origen=id_est_origen, \
                                                                 id_est_dest1=id_est_dest1, id_est_dest2=id_est_dest2)
+                
+
+            # ReasignarFurgonetaInformado #########################################################################
+            if self.operadores_activos['ReasignarFurgonetaInformado']:
+                lista_est_excedente: list[tuple] = []
+                lista_est_faltante: list[tuple] = []
+                for est in self.info_estaciones:
+                    if est['dif'] < 0:
+                        lista_est_faltante.append((est['dif'], est['index']))
+                    elif est['dif'] > 0 and est['disp'] > 0:
+                        lista_est_excedente.append((est['dif'], est['index']))
+                
+                lista_est_excedente.sort(reverse=True)
+                lista_est_faltante.sort()
+
+                yield ReasignarFurgonetaInformado(id_furgoneta=furgoneta.id, \
+                                                            id_est_origen=lista_est_excedente[0][1], \
+                                                                id_est_dest1=lista_est_faltante[0][1], id_est_dest2=lista_est_faltante[1][1])
             
             # ReducirNumeroBicicletasCarga ########################################################################
-            if self.operadores_activos['ReducirNumeroBicicletasCarga']:
-                for bool_reduction in range(furgoneta.bicicletas_cargadas - (furgoneta.bicicletas_cargadas//10)*10 + 1):
-                    yield ReducirNumeroBicicletasCarga(id_furgoneta=furgoneta.id, \
-                                                        reducir_bicicletas_carga=bool_reduction)
+            for num_reduction in range(furgoneta.bicicletas_cargadas - (furgoneta.bicicletas_cargadas//10)*10 + 1):
+                yield ReducirNumeroBicicletasCarga(id_furgoneta=furgoneta.id, \
+                                                    reducir_bicicletas_carga=num_reduction)
 
     def apply_action(self, action: BicingOperator) -> 'EstadoBicing':
         new_state: EstadoBicing = self.__copy()
@@ -334,14 +339,13 @@ class EstadoBicing(object):
                 else:
                     furgoneta1.id_est_dest2, furgoneta2.id_est_dest2 = furgoneta2.id_est_dest2, furgoneta1.id_est_dest2
 
-        elif isinstance(action, QuitarEstacionDescarga):
+        elif isinstance(action, ReasignarFurgonetaRandom):
             furgoneta = new_state.lista_furgonetas[action.id_furgoneta]
-            if action.pos_est == 0: # Quitar la primera estación de descarga
-                furgoneta.id_est_dest1 = furgoneta.id_est_dest2
-            else: # Quitar la segunda estación de descarga
-                furgoneta.id_est_dest2 = furgoneta.id_est_dest1
+            furgoneta.id_est_origen = action.id_est_origen
+            furgoneta.id_est_dest1 = action.id_est_dest1
+            furgoneta.id_est_dest2 = action.id_est_dest2
 
-        elif isinstance(action, ReasignarFurgoneta):
+        elif isinstance(action, ReasignarFurgonetaInformado):
             furgoneta = new_state.lista_furgonetas[action.id_furgoneta]
             furgoneta.id_est_origen = action.id_est_origen
             furgoneta.id_est_dest1 = action.id_est_dest1

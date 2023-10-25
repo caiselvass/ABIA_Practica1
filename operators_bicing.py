@@ -5,13 +5,6 @@ class BicingOperator(object):
     pass
 
 
-class MultiBicingOperator(object):
-    """
-    Clase abstracta para respresentar los operadores que realizan más de una acción.
-    """
-    pass
-
-
 class CambiarEstacionCarga(BicingOperator):
     """
     Operador que cambia la estación de carga de una furgoneta.
@@ -63,17 +56,19 @@ class IntercambiarEstacionDescarga(BicingOperator):
         self.pos_est2 = pos_est2
 
 
-class QuitarEstacionDescarga(BicingOperator):
+
+class ReasignarFurgonetaRandom(BicingOperator):
     """
-    Operador que quita una estación de descarga de una furgoneta.
+    Operador que cambia todas las estaciones de carga y descarga de una furgoneta.
     """
-    def __init__(self, id_furgoneta: int, pos_est: int) -> None:
-        assert pos_est in {0, 1}, "pos_est debe ser 0 o 1"
+    def __init__(self, id_furgoneta: int, id_est_origen: int, id_est_dest1: int, id_est_dest2) -> None:
         self.id_furgoneta = id_furgoneta
-        self.pos_est = pos_est
+        self.id_est_origen = id_est_origen
+        self.id_est_dest1 = id_est_dest1
+        self.id_est_dest2 = id_est_dest2
 
 
-class ReasignarFurgoneta(BicingOperator, MultiBicingOperator):
+class ReasignarFurgonetaInformado(BicingOperator):
     """
     Operador que cambia todas las estaciones de carga y descarga de una furgoneta.
     """
@@ -88,6 +83,6 @@ class ReducirNumeroBicicletasCarga(BicingOperator):
     """
     Operador que reduce el número de bicicletas de una estación de carga.
     """
-    def __init__(self, id_furgoneta: int, reducir_bicicletas_carga: bool) -> None:
+    def __init__(self, id_furgoneta: int, reducir_bicicletas_carga: int) -> None:
         self.id_furgoneta = id_furgoneta
         self.reducir_bicicletas_carga = reducir_bicicletas_carga
