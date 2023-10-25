@@ -61,27 +61,32 @@ def comparar_all_operadores(opt: int = 0, \
     Comprueba todas las posibles combinaciones de operadores y escribe en pantalla los resultados ordenados de mayor a menor beneficio medio.
     """
     
-    # Los únicos operadores que podemos activar/desactivar son CambiarOrdenDescarga, IntercambiarEstacionDescarga, IntercambiarEstacionCarga ReasignarFurgonetaRandom y ReasignarFurgonetaInformado
+    # Los únicos operadores que podemos activar/desactivar son CambiarOrdenDescarga, IntercambiarEstacionDescarga, IntercambiarEstacionCarga, ReasignarFurgonetaRandom y ReasignarFurgonetaInformado
     progreso = 0
     media_beneficios = []
     for val5 in [True, False]:
         operadores['ReasignarFurgonetaInformado'] = val5
-        for val4 in [True, False]:
-            operadores['IntercambiarEstacionCarga'] = val4
+        if val5: # No pueden estar activos los dos métodos de reasignar furgonetas a la vez
+            lista_condicionada = [False]
+        else:
+            lista_condicionada = [True, False]
+        for val4 in lista_condicionada:
+            operadores['ReasignarFurgonetasRandom'] = val4
             for val3 in [True, False]:
                 operadores['CambiarOrdenDescarga'] = val3
                 for val2 in [True, False]:
-                    operadores['ReasignarFurgonetaRandom'] = val2
+                    operadores['IntercambiarEstacionCarga'] = val2
                     for val1 in [True, False]:
                         operadores['IntercambiarEstacionDescarga'] = val1
                         
                         progreso += 1
-                        print(f"PROGRESO: {round((progreso/(2**len(operadores)))*100, 1)}%", end='\r')
+                        print(f"PROGRESO: {round((progreso/24)*100, 1)}%", end='\r')
                         
                         beneficios_tmp = []
                         tiempo, soluciones_expandidas = 0, 0
+
                         rng = random.Random(semilla)
-                        for _ in range(iteraciones):
+                        for _ in range(iteraciones):                            
                             seed = rng.randint(0, 1_000_000)
                             
                             state = generate_initial_state(opt=opt, semilla=seed, operadores_activos=operadores)
@@ -107,7 +112,7 @@ def comparar_all_operadores(opt: int = 0, \
         if all_true:
             print(f"B: {exp[0]} | T: {exp[1]*1000} ms | Nº: {exp[2]} | OP: ALL TRUE\n")
         else:
-            values = ['T' if v else 'F' for v in exp[3].values()]
+            values = [(k, 'T') if v else (k, 'F') for k, v in exp[3].items()]
             print(f"B: {exp[0]} | T: {exp[1]*1000} ms | Nº: {exp[2]} | OP: {values}\n")
 
     print(f"OPT: {opt} | ITERACIONES: {iteraciones} | HEURÍSTICO: {2 if params.coste_transporte else 1} | SEMILLA: {semilla}\n")
@@ -259,7 +264,7 @@ if __name__ == "__main__":
     
 
 # Experimento 1 ----------------------------------------------------------------------------------
-    comparar_all_operadores(opt=2, semilla=random.randint(0, 1_000_000), iteraciones=100)
+    comparar_all_operadores(opt=2, semilla=random.randint(0, 1_000_000), iteraciones=22)
 
 # Experimento 2 ----------------------------------------------------------------------------------
     #mejor_initial_state(iteraciones=100)

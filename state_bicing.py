@@ -297,9 +297,10 @@ class EstadoBicing(object):
                                                                 id_est_dest1=lista_est_faltante[0][1], id_est_dest2=lista_est_faltante[1][1])
             
             # ReducirNumeroBicicletasCarga ########################################################################
-            reduccion = furgoneta.bicicletas_cargadas - (furgoneta.bicicletas_cargadas//10)*10
-            yield ReducirNumeroBicicletasCarga(id_furgoneta=furgoneta.id, \
-                                                reducir_bicicletas_carga=reduccion)
+            if furgoneta.bicicletas_cargadas % 10 != 0:
+                reduccion = furgoneta.bicicletas_cargadas - (furgoneta.bicicletas_cargadas//10)*10
+                yield ReducirNumeroBicicletasCarga(id_furgoneta=furgoneta.id, \
+                                                    reducir_bicicletas_carga=reduccion)
 
     def apply_action(self, action: BicingOperator) -> 'EstadoBicing':
         new_state: EstadoBicing = self.__copy()
