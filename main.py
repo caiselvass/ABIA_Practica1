@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from pdb import set_trace as bp
 
 # Declaración de funciones
-def comparar_operadores_default(opt: int = 0, iteraciones: int = 10, semilla: Union[int, None] = None, operadores_activos: dict = {operator: True for operator in {'CambiarOrdenDescarga', 'IntercambiarEstacionDescarga', 'IntercambiarEstacionCarga', 'ReasignarFurgonetaRandom', 'ReasignarFurgonetaInformado'}}) -> None:
+def comparar_operadores_default(opt: int = 0, iteraciones: int = 10, semilla: Union[int, None] = None, operadores_activos: dict = {operator: True for operator in params.operadores_modificables}) -> None:
     """
     Comparación de los resultados de Hill Climbing con los operadores por defecto y con los operadores modificados introducidos en el parámetro operadores_activos.
     """
@@ -56,7 +56,7 @@ def comparar_operadores_default(opt: int = 0, iteraciones: int = 10, semilla: Un
 def comparar_all_operadores(opt: int = 0, \
                             iteraciones: int = 10, \
                                 semilla: Union[int, None] = None, \
-                                    operadores: dict = {operator: True for operator in {'CambiarOrdenDescarga', 'IntercambiarEstacionDescarga', 'IntercambiarEstacionCarga', 'ReasignarFurgonetaRandom', 'ReasignarFurgonetaInformado'}}) -> None:
+                                    operadores: dict = {operator: True for operator in params.operadores_modificables}) -> None:
     """
     Comprueba todas las posibles combinaciones de operadores y escribe en pantalla los resultados ordenados de mayor a menor beneficio medio.
     """
