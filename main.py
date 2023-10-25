@@ -71,7 +71,7 @@ def comparar_all_operadores(opt: int = 0, \
         else:
             lista_condicionada = [True, False]
         for val4 in lista_condicionada:
-            operadores['ReasignarFurgonetasRandom'] = val4
+            operadores['ReasignarFurgonetaRandom'] = val4
             for val3 in [True, False]:
                 operadores['CambiarOrdenDescarga'] = val3
                 for val2 in [True, False]:
@@ -103,16 +103,15 @@ def comparar_all_operadores(opt: int = 0, \
     media_beneficios.sort(key=lambda x: (x[0], -x[1]))
         
     for exp in media_beneficios:
-        all_true = True
+        v_count = 0
         for v in exp[3].values():
-            if not v:
-                all_true = False
-                break
+            if v:
+                v_count += 1
 
-        if all_true:
-            print(f"B: {exp[0]} | T: {exp[1]*1000} ms | Nº: {exp[2]} | OP: ALL TRUE\n")
+        if v_count >= len(exp[3]) - 1:
+            print(f"B: {exp[0]} | T: {exp[1]*1000} ms | Nº: {exp[2]} | OP: ALL TRUE {'[ReasignarFurgonetaRandom: T]' if exp[3]['ReasignarFurgonetaRandom'] else ('[ReasignarFurgonetaInformado: T]' if exp[3]['ReasignarFurgonetaInformado'] else '')}\n")
         else:
-            values = [(k, 'T') if v else (k, 'F') for k, v in exp[3].items()]
+            values = [f'{k}: T' if v else f'{k}: F' for k, v in exp[3].items()]
             print(f"B: {exp[0]} | T: {exp[1]*1000} ms | Nº: {exp[2]} | OP: {values}\n")
 
     print(f"OPT: {opt} | ITERACIONES: {iteraciones} | HEURÍSTICO: {2 if params.coste_transporte else 1} | SEMILLA: {semilla}\n")
@@ -264,7 +263,7 @@ if __name__ == "__main__":
     
 
 # Experimento 1 ----------------------------------------------------------------------------------
-    comparar_all_operadores(opt=2, semilla=random.randint(0, 1_000_000), iteraciones=22)
+    comparar_all_operadores(opt=2, semilla=random.randint(0, 1_000_000), iteraciones=10)
 
 # Experimento 2 ----------------------------------------------------------------------------------
     #mejor_initial_state(iteraciones=100)
