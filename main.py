@@ -243,8 +243,6 @@ def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int 
 def encontrar_parametros_SA() -> tuple:
     pass
 
-
-
 def evolucion_tiempo_ejecucion() -> None:
     pass
 
@@ -283,18 +281,18 @@ if __name__ == "__main__":
     
 
 # Experimento 1 ----------------------------------------------------------------------------------
-    comparar_all_operadores(opt=2, semilla=random.randint(0, 1_000_000), iteraciones=100)
+    """comparar_all_operadores(opt=2, semilla=random.randint(0, 1_000_000), iteraciones=100)"""
 
 # Experimento 2 ----------------------------------------------------------------------------------
-    mejor_initial_state(iteraciones=100)
+    """mejor_initial_state(iteraciones=100)"""
 
 # Experimento 3 ----------------------------------------------------------------------------------
-    k, lam = encontrar_parametros_SA()
+    """k, lam = encontrar_parametros_SA()
 
     def exp_schedule(t, k: float=k, lam: float=lam):
         return k * exp(-lam * t)
     
-    comparar_resultados_HC_SA(opt=2, HC=True, SA=True, iterations=100, schedule_sa=exp_schedule)
+    comparar_resultados_HC_SA(opt=2, HC=True, SA=True, iterations=100, schedule_sa=exp_schedule)"""
 
 # Experimento 4 ----------------------------------------------------------------------------------
     

@@ -5,7 +5,7 @@ from state_bicing import EstadoBicing
 from furgoneta_bicing import Furgoneta
 
 # Declaración de funciones
-def generate_initial_state(opt: int = 0, mode_simulated_annealing: bool = False, semilla: Union[int, None] = None, operadores_activos: dict = {operator: True for operator in {'CambiarEstacionCarga', \
+def generate_initial_state(opt: int = 0, semilla: Union[int, None] = None, operadores_activos: dict = {operator: True for operator in {'CambiarEstacionCarga', \
                                                                 'IntercambiarEstacionCarga', \
                                                                     'CambiarOrdenDescarga', \
                                                                         'CambiarEstacionDescarga', \
@@ -115,5 +115,5 @@ def generate_initial_state(opt: int = 0, mode_simulated_annealing: bool = False,
             j += 1"""
 
     
-    state = EstadoBicing(mode_simulated_annealing=mode_simulated_annealing, lista_furgonetas=lista_furgonetas, operadores_activos=operadores_activos)
+    state = EstadoBicing(lista_furgonetas=lista_furgonetas, operadores_activos=operadores_activos)
     return state
