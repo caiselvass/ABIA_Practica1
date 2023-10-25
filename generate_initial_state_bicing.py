@@ -5,7 +5,7 @@ from state_bicing import EstadoBicing
 from furgoneta_bicing import Furgoneta
 
 # Declaración de funciones
-def generate_initial_state(opt: int = 0, semilla: Union[int, None] = None, operadores_activos: dict = {operator: True for operator in {'CambiarEstacionCarga', \
+def generate_initial_state(opt: int = 0, mode_simulated_annealing: bool = False, semilla: Union[int, None] = None, operadores_activos: dict = {operator: True for operator in {'CambiarEstacionCarga', \
                                                                 'IntercambiarEstacionCarga', \
                                                                     'CambiarOrdenDescarga', \
                                                                         'CambiarEstacionDescarga', \
@@ -97,7 +97,7 @@ def generate_initial_state(opt: int = 0, semilla: Union[int, None] = None, opera
         lista_est_excedente.sort(reverse=True)
         lista_est_faltante.sort()
         
-        # Assignación tipo 1
+        # Asignación tipo 1
         j = 0
         for i, furgoneta in enumerate(lista_furgonetas):
             furgoneta.id_est_origen = lista_est_excedente[i][1]
@@ -105,7 +105,7 @@ def generate_initial_state(opt: int = 0, semilla: Union[int, None] = None, opera
             furgoneta.id_est_dest2 = lista_est_faltante[j+1][1]
             j += 2
 
-        # Assignación tipo 2
+        # Asignación tipo 2
         """j = 0
         for i, furgoneta in enumerate(lista_furgonetas):
             furgoneta.id_est_origen = lista_est_excedente[i][1]
@@ -115,5 +115,5 @@ def generate_initial_state(opt: int = 0, semilla: Union[int, None] = None, opera
             j += 1"""
 
     
-    state = EstadoBicing(lista_furgonetas=lista_furgonetas, operadores_activos=operadores_activos)
+    state = EstadoBicing(mode_simulated_annealing=mode_simulated_annealing, lista_furgonetas=lista_furgonetas, operadores_activos=operadores_activos)
     return state

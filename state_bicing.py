@@ -18,7 +18,8 @@ from operators_bicing import BicingOperator, \
 from pdb import set_trace as bp
 
 class EstadoBicing(object):
-    def __init__(self, lista_furgonetas: list[Furgoneta], \
+    def __init__(self, mode_simulated_annealing: bool = False,
+                 lista_furgonetas: list[Furgoneta], \
                  operadores_activos: dict = {}) -> None:
         self.operadores_activos = operadores_activos
         self.info_estaciones: list[dict] = [{'index': index, \
@@ -26,6 +27,7 @@ class EstadoBicing(object):
                                     'disp': est.num_bicicletas_no_usadas} \
                                         for index, est in enumerate(params.estaciones)]
         self.lista_furgonetas = lista_furgonetas
+        self.mode_simulated_annealing = mode_simulated_annealing
 
     def __copy(self) -> 'EstadoBicing':
         new_lista_furgonetas: list[Furgoneta] = [furgoneta.copy() for furgoneta in self.lista_furgonetas]

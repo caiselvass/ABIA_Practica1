@@ -240,15 +240,21 @@ def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int 
     plt.savefig("distancias.png")
     plt.close()  # Cierra la figura para que podamos crear la siguiente
 
-def encontrar_parametros_SA():
+def encontrar_parametros_SA() -> tuple:
     pass
+
+
+
+def evolucion_tiempo_ejecucion() -> None:
+    pass
+
 
 ##############################################################################################################################
 
 # Programa principal
 if __name__ == "__main__":
 
-# Experimento individual
+# Pruebas individuales
     """initial_state: EstadoBicing = generate_initial_state(opt=2)
     initial_state.heuristic(coste_transporte=params.coste_transporte)
     problema_bicing = ProblemaBicing(initial_state)
@@ -263,8 +269,8 @@ if __name__ == "__main__":
     print(f"TIEMPO DE EJECUCIÓN: {1000*(tiempo_final - tiempo_inicio)} ms\n")
     #final_solution_HC.visualize_state(manhattan = True)"""
 
-# Experimentos con operadores:
-    operadores_experimento = {'CambiarEstacionCarga': True, \
+# Pruebas con operadores:
+    """operadores_experimento = {'CambiarEstacionCarga': True, \
                                     'IntercambiarEstacionCarga': True, \
                                         'CambiarOrdenDescarga': True, \
                                             'CambiarEstacionDescarga': True, \
@@ -273,17 +279,32 @@ if __name__ == "__main__":
                                                         'ReasignarFurgoneta': True, \
                                                             'ReducirNumeroBicicletasCarga': True}
     
-    comparar_operadores_default(opt=2, iteraciones=100, operadores_activos=operadores_experimento)
-    #comparar_all_operadores(opt=1, semilla=random.randint(0, 1_000_000), iteraciones=100)
-    #mejor_initial_state(iteraciones=100)
+    comparar_operadores_default(opt=2, iteraciones=100, operadores_activos=operadores_experimento)"""
+    
 
-# Experimentos de HC vs SA + Obtención de estadísticas y generación de gráficas
-    # Schedule para Simulated Annealing
-    lam: float = 0.001
-    k : float = 25
+# Experimento 1 ----------------------------------------------------------------------------------
+    comparar_all_operadores(opt=2, semilla=random.randint(0, 1_000_000), iteraciones=100)
+
+# Experimento 2 ----------------------------------------------------------------------------------
+    mejor_initial_state(iteraciones=100)
+
+# Experimento 3 ----------------------------------------------------------------------------------
+    k, lam = encontrar_parametros_SA()
 
     def exp_schedule(t, k: float=k, lam: float=lam):
         return k * exp(-lam * t)
     
-    # Realizar experimento y generar gráficas
-    #comparar_resultados_HC_SA(opt=2, HC=True, SA=True, iterations=100, schedule_sa=exp_schedule)
+    comparar_resultados_HC_SA(opt=2, HC=True, SA=True, iterations=100, schedule_sa=exp_schedule)
+
+# Experimento 4 ----------------------------------------------------------------------------------
+    
+
+# Experimento 5 ----------------------------------------------------------------------------------
+
+
+# Experimento 6 ----------------------------------------------------------------------------------
+
+
+# Experimento Especial ---------------------------------------------------------------------------
+
+    comparar_resultados_HC_SA(opt=2, HC=True, SA=False, iterations=100)
