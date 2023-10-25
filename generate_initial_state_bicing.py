@@ -7,7 +7,7 @@ from furgoneta_bicing import Furgoneta
 # Declaración de funciones
 def generate_initial_state(opt: int = 0, \
                            semilla: Union[int, None] = None, \
-                            operadores_activos: dict = {operator: True for operator in {'CambiarOrdenDescarga', 'IntercambiarEstacionDescarga', 'IntercambiarEstacionCarga' 'ReasignarFurgonetaRandom', 'ReasignarFurgonetaInformado'}}) -> EstadoBicing:
+                            operadores_activos: dict = {operator: True for operator in {'CambiarOrdenDescarga', 'IntercambiarEstacionDescarga', 'IntercambiarEstacionCarga', 'ReasignarFurgonetaRandom', 'ReasignarFurgonetaInformado'}}) -> EstadoBicing:
     rng = random.Random(semilla)
 
     n_estaciones = params.n_estaciones

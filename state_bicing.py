@@ -249,7 +249,7 @@ class EstadoBicing(object):
                                                                             pos_est1=pos_est1, pos_est2=pos_est2)
         
             # ReasignarFurgonetaRandom ############################################################################  
-            if self.operadores_activos['ReasignarFurgoneta']:
+            if self.operadores_activos['ReasignarFurgonetaRandom']:
                 lista_est_excedente: list = []
                 lista_est_faltante: list = []
                 
