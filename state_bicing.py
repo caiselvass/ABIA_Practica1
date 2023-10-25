@@ -442,7 +442,6 @@ class EstadoBicing(object):
                     draw_euclidean_path(start, stop1, COLOR)
                     draw_euclidean_path(stop1, stop2, COLOR)
 
-
         # Crear estaciones y rutas de furgonetas aleatoriamente
         stations = [(est.coordX, est.coordY) for est in params.estaciones]
 
