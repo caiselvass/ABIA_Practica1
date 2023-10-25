@@ -250,13 +250,13 @@ if __name__ == "__main__":
     """operadores_experimento = {'CambiarOrdenDescarga': True, \
                               'IntercambiarEstacionDescarga': True, \
                                 'IntercambiarEstacionCarga': True, \
-                                    'ReasignarFurgonetaInformado': True}
+                                    'ReasignarFurgonetaInformado': False}
     
-    comparar_operadores_default(opt=2, iteraciones=100, operadores_activos=operadores_experimento)"""
+    comparar_operadores_default(opt=2, iteraciones=1, operadores_activos=operadores_experimento)"""
     
 
 # Experimento 1 ----------------------------------------------------------------------------------
-    comparar_all_operadores(opt=0, semilla=random.randint(0, 1_000_000), iteraciones=10)
+    #comparar_all_operadores(opt=0, semilla=random.randint(0, 1_000_000), iteraciones=10)
 
 # Experimento 2 ----------------------------------------------------------------------------------
     #mejor_initial_state(iteraciones=100)

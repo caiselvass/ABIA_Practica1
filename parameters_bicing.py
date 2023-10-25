@@ -11,14 +11,11 @@ class Parameters:
 		self.estaciones: list[Estacion] = Estaciones(num_estaciones=n_estaciones, num_bicicletas=n_bicicletas, semilla=seed).lista_estaciones
 		self.operadores_modificables = operadores_modificables
 
-	def __repr__(self) -> str:
-		return f"Params(n_estaciones={self.n_estaciones}, n_bicicletas={self.n_bicicletas}, n_furgonetas={self.n_furgonetas}, seed={self.seed})"
-
 params = Parameters(n_estaciones=25, \
 					n_bicicletas=1250, \
 						n_furgonetas=5, \
 							seed=42, \
-								coste_transporte=False, \
+								coste_transporte=True, \
 									operadores_modificables={'CambiarOrdenDescarga', \
 								  'IntercambiarEstacionDescarga', \
 									'IntercambiarEstacionCarga', \
