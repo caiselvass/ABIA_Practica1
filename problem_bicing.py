@@ -5,13 +5,17 @@ from parameters_bicing import params
 
 
 class ProblemaBicing(Problem):
-    def __init__(self, initial_state: EstadoBicing):
+    def __init__(self, initial_state: EstadoBicing, mode_simulated_annealing: bool = False):
         self.solutions_checked = 0
+        self.mode_simulated_annealing = mode_simulated_annealing
         super().__init__(initial_state)
 
     def actions(self, state: EstadoBicing) -> Generator:
-        return state.generate_actions()
-
+        if self.mode_simulated_annealing:
+            return state.generate_actions(mode_simulated_annealing=True)
+        else:
+            return state.generate_actions()
+        
     def result(self, state: EstadoBicing, action) -> EstadoBicing:
         return state.apply_action(action)
 

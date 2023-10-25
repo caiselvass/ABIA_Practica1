@@ -29,6 +29,7 @@ def comparar_operadores_default(opt: int = 0, iteraciones: int = 10, semilla: Un
         state1 = generate_initial_state(opt=opt, semilla=seed)
         state2 = generate_initial_state(opt=opt, semilla=seed, operadores_activos=operadores_activos)
         
+        # Hill Climbing con operadores por defecto
         problema1 = ProblemaBicing(initial_state=state1)
         inici1 = time.time()
         hill_climbing_1 = hill_climbing(problema1)
@@ -39,6 +40,7 @@ def comparar_operadores_default(opt: int = 0, iteraciones: int = 10, semilla: Un
         distancia_total_default = sum([hill_climbing_1.get_distancias_furgoneta(id_f)[2] for id_f in range(params.n_furgonetas)])
         distancias_default.append(distancia_total_default)
         
+        # Hill Climbing con operadores modificados
         problema2 = ProblemaBicing(initial_state=state2)
         inici2 = time.time()
         hill_climbing_2 = hill_climbing(problema2)
@@ -178,6 +180,7 @@ def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int 
 
         # Experimento con Simulated Annealing
         if SA:
+            problema_bicing.mode_simulated_annealing = True
             inicio_SA = time.time()
             resultado_SA = simulated_annealing(problema_bicing, schedule=schedule_sa)
             tiempos_SA.append((time.time() - inicio_SA)*1000)
