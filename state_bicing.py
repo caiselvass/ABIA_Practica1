@@ -10,9 +10,8 @@ from operators_bicing import BicingOperator, \
                 CambiarOrdenDescarga, \
                     CambiarEstacionDescarga, \
                         IntercambiarEstacionDescarga, \
-                                ReasignarFurgonetaRandom, \
-                                    ReasignarFurgonetaInformado, \
-                                        ReducirNumeroBicicletasCarga
+                            ReasignarFurgonetaInformado, \
+                                ReducirNumeroBicicletasCarga
 
 class EstadoBicing(object):
     def __init__(self, lista_furgonetas: list[Furgoneta], \
@@ -246,36 +245,7 @@ class EstadoBicing(object):
                                     if id_estacion2 != furgoneta.id_est_origen and id_estacion1 != furgoneta2.id_est_origen:
                                         yield IntercambiarEstacionDescarga(id_furgoneta1=furgoneta.id, id_furgoneta2=furgoneta2.id, \
                                                                         id_est1=id_estacion1, id_est2=id_estacion2, \
-                                                                            pos_est1=pos_est1, pos_est2=pos_est2)
-        
-            # ReasignarFurgonetaRandom ############################################################################  
-            if self.operadores_activos['ReasignarFurgonetaRandom']:
-                lista_est_excedente: list = []
-                lista_est_faltante: list = []
-                
-                for est in self.info_estaciones:
-                    if est['dif'] < 0:
-                        lista_est_faltante.append(est['index'])
-                    elif est['dif'] > 0 and est['disp'] > 0 and est['index'] not in estaciones_carga:
-                        lista_est_excedente.append(est['index'])
-
-                n_estaciones_origen = len(lista_est_excedente)
-                n_estaciones_destino = len(lista_est_faltante)
-                
-                id_est_o = random.randint(0, n_estaciones_origen - 1)
-
-                id_est_origen = lista_est_excedente[id_est_o]
-            
-                # Asignamos las estaciones de destino a la furgoneta
-                id_est_d1 = random.randint(0, n_estaciones_destino - 1)
-                id_est_d2 = random.randint(0, n_estaciones_destino - 1)
-
-                id_est_dest1 = lista_est_faltante[id_est_d1]
-                id_est_dest2 = lista_est_faltante[id_est_d2]
-                yield ReasignarFurgonetaRandom(id_furgoneta=furgoneta.id, \
-                                                            id_est_origen=id_est_origen, \
-                                                                id_est_dest1=id_est_dest1, id_est_dest2=id_est_dest2)
-                
+                                                                            pos_est1=pos_est1, pos_est2=pos_est2)        
 
             # ReasignarFurgonetaInformado #########################################################################
             if self.operadores_activos['ReasignarFurgonetaInformado']:
@@ -337,12 +307,6 @@ class EstadoBicing(object):
                     furgoneta1.id_est_dest2, furgoneta2.id_est_dest1 = furgoneta2.id_est_dest1, furgoneta1.id_est_dest2
                 else:
                     furgoneta1.id_est_dest2, furgoneta2.id_est_dest2 = furgoneta2.id_est_dest2, furgoneta1.id_est_dest2
-
-        elif isinstance(action, ReasignarFurgonetaRandom):
-            furgoneta = new_state.lista_furgonetas[action.id_furgoneta]
-            furgoneta.id_est_origen = action.id_est_origen
-            furgoneta.id_est_dest1 = action.id_est_dest1
-            furgoneta.id_est_dest2 = action.id_est_dest2
 
         elif isinstance(action, ReasignarFurgonetaInformado):
             furgoneta = new_state.lista_furgonetas[action.id_furgoneta]

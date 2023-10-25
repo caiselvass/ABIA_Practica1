@@ -60,61 +60,55 @@ def comparar_all_operadores(opt: int = 0, \
     """
     Comprueba todas las posibles combinaciones de operadores y escribe en pantalla los resultados ordenados de mayor a menor beneficio medio.
     """
-    
     # Los únicos operadores que podemos activar/desactivar son CambiarOrdenDescarga, IntercambiarEstacionDescarga, IntercambiarEstacionCarga, ReasignarFurgonetaRandom y ReasignarFurgonetaInformado
     progreso = 0
     media_beneficios = []
-    for val5 in [True, False]:
-        operadores['ReasignarFurgonetaInformado'] = val5
-        if val5: # No pueden estar activos los dos métodos de reasignar furgonetas a la vez
-            lista_condicionada = [False]
-        else:
-            lista_condicionada = [True, False]
-        for val4 in lista_condicionada:
-            operadores['ReasignarFurgonetaRandom'] = val4
-            for val3 in [True, False]:
-                operadores['CambiarOrdenDescarga'] = val3
-                for val2 in [True, False]:
-                    operadores['IntercambiarEstacionCarga'] = val2
-                    for val1 in [True, False]:
-                        operadores['IntercambiarEstacionDescarga'] = val1
-                        
-                        progreso += 1
-                        print(f"PROGRESO: {round((progreso/24)*100, 1)}%", end='\r')
-                        
-                        beneficios_tmp = []
-                        tiempo, soluciones_expandidas = 0, 0
+    for val4 in [True, False]:
+        operadores['ReasignarFurgonetaRandom'] = val4
+        for val3 in [True, False]:
+            operadores['CambiarOrdenDescarga'] = val3
+            for val2 in [True, False]:
+                operadores['IntercambiarEstacionCarga'] = val2
+                for val1 in [True, False]:
+                    operadores['IntercambiarEstacionDescarga'] = val1
+                    
+                    progreso += 1
+                    print(f"PROGRESO: {round((progreso/2**len(operadores))*100, 1)}%", end='\r')
+                    
+                    beneficios_tmp = []
+                    tiempo, soluciones_expandidas = 0, 0
 
-                        rng = random.Random(semilla)
-                        for _ in range(iteraciones):                            
-                            seed = rng.randint(0, 1_000_000)
-                            
-                            state = generate_initial_state(opt=opt, semilla=seed, operadores_activos=operadores)
-                            
-                            problema = ProblemaBicing(initial_state=state)
-                            inici = time.time()
-                            hill_climbing_1 = hill_climbing(problema)
-                            tiempo += time.time() - inici
-                            soluciones_expandidas += problema.solutions_checked
-                            beneficios_tmp.append(hill_climbing_1.heuristic(coste_transporte=params.coste_transporte))
+                    rng = random.Random(semilla)
+                    for _ in range(iteraciones):                            
+                        seed = rng.randint(0, 1_000_000)
                         
-                        media_beneficios.append((sum(beneficios_tmp)/iteraciones, tiempo/iteraciones, int(soluciones_expandidas/iteraciones), {k: v for k, v in operadores.items()}))
+                        state = generate_initial_state(opt=opt, semilla=seed, operadores_activos=operadores)
+                        
+                        problema = ProblemaBicing(initial_state=state)
+                        inici = time.time()
+                        hill_climbing_1 = hill_climbing(problema)
+                        tiempo += time.time() - inici
+                        soluciones_expandidas += problema.solutions_checked
+                        beneficios_tmp.append(hill_climbing_1.heuristic(coste_transporte=params.coste_transporte))
+                    
+                    media_beneficios.append((sum(beneficios_tmp)/iteraciones, tiempo/iteraciones, int(soluciones_expandidas/iteraciones), {k: v for k, v in operadores.items()}))
 
     media_beneficios.sort(key=lambda x: (x[0], -x[1]))
         
     for exp in media_beneficios:
-        v_count = 0
+        all_true = True
         for v in exp[3].values():
-            if v:
-                v_count += 1
+            if not v:
+                all_true = False
+                break
 
-        if v_count >= len(exp[3]) - 1:
-            print(f"B: {exp[0]} | T: {exp[1]*1000} ms | Nº: {exp[2]} | OP: ALL TRUE {'[ReasignarFurgonetaRandom: T]' if exp[3]['ReasignarFurgonetaRandom'] else ('[ReasignarFurgonetaInformado: T]' if exp[3]['ReasignarFurgonetaInformado'] else '')}\n")
+        if all_true:
+            print(f"B: {exp[0]} | T: {exp[1]*1000} ms | Nº: {exp[2]} | OP: ALL TRUE\n")
         else:
             values = [f'{k}: T' if v else f'{k}: F' for k, v in exp[3].items()]
             print(f"B: {exp[0]} | T: {exp[1]*1000} ms | Nº: {exp[2]} | OP: {values}\n")
 
-    print(f"OPT: {opt} | ITERACIONES: {iteraciones} | HEURÍSTICO: {2 if params.coste_transporte else 1} | SEMILLA: {semilla}\n")
+    print(f"OPT: {opt} | ITERACIONES: {iteraciones} | HEURÍSTICO: {2 if params.coste_transporte else 1}\n")
 
 def mejor_initial_state(initial_strategies: list = [0, 1, 2], iteraciones: int = 10) -> None:
     """
@@ -256,14 +250,13 @@ if __name__ == "__main__":
     """operadores_experimento = {'CambiarOrdenDescarga': True, \
                               'IntercambiarEstacionDescarga': True, \
                                 'IntercambiarEstacionCarga': True, \
-                                    'ReasignarFurgonetaRandom': True, \
-                                        'ReasignarFurgonetaInformado': True}
+                                    'ReasignarFurgonetaInformado': True}
     
     comparar_operadores_default(opt=2, iteraciones=100, operadores_activos=operadores_experimento)"""
     
 
 # Experimento 1 ----------------------------------------------------------------------------------
-    comparar_all_operadores(opt=0, semilla=random.randint(0, 1_000_000), iteraciones=50)
+    comparar_all_operadores(opt=0, semilla=random.randint(0, 1_000_000), iteraciones=10)
 
 # Experimento 2 ----------------------------------------------------------------------------------
     #mejor_initial_state(iteraciones=100)

@@ -56,18 +56,6 @@ class IntercambiarEstacionDescarga(BicingOperator):
         self.pos_est2 = pos_est2
 
 
-
-class ReasignarFurgonetaRandom(BicingOperator):
-    """
-    Operador que cambia todas las estaciones de carga y descarga de una furgoneta.
-    """
-    def __init__(self, id_furgoneta: int, id_est_origen: int, id_est_dest1: int, id_est_dest2) -> None:
-        self.id_furgoneta = id_furgoneta
-        self.id_est_origen = id_est_origen
-        self.id_est_dest1 = id_est_dest1
-        self.id_est_dest2 = id_est_dest2
-
-
 class ReasignarFurgonetaInformado(BicingOperator):
     """
     Operador que cambia todas las estaciones de carga y descarga de una furgoneta.

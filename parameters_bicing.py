@@ -22,7 +22,6 @@ params = Parameters(n_estaciones=25, \
 									operadores_modificables={'CambiarOrdenDescarga', \
 								  'IntercambiarEstacionDescarga', \
 									'IntercambiarEstacionCarga', \
-										'ReasignarFurgonetaRandom', \
-											'ReasignarFurgonetaInformado'})
+										'ReasignarFurgonetaInformado'})
 
 
