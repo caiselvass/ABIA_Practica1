@@ -7,7 +7,7 @@ import random
 from math import exp
 from typing import Union
 import time
-from timeit import timeit
+import numpy as np
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
@@ -151,7 +151,7 @@ def mejor_initial_state(initial_strategies: list = [0, 1, 2], iteraciones: int =
     plt.savefig('experimento2.png', format='png')  # Guardar gráfico como PNG
     plt.show()
 
-def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int = 10, opt: int = 2, schedule_sa = None, beneficios_bool: bool = True, tiempos_bool: bool = True, distancias_bool: bool = True) -> None:
+def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int = 10, opt: int = 2, schedule_sa = None, beneficios_bool: bool = True, tiempos_bool: bool = True, distancias_bool: bool = True) -> Union[None, list]:
     """
     Realiza los experimentos con Hill Climbing y Simulated Annealing y genera las gráficas de los resultados.
     Se pueden desactivar los experimentos que no se quieran realizar.
@@ -226,8 +226,52 @@ def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int 
         plt.savefig("distancias.png")
         plt.close()  # Cierra la figura para que podamos crear la siguiente
 
-def encontrar_parametros_SA() -> tuple:
-    pass
+    # Devolvemos los beneficios de SA para el experimento 3 (Encontrar los mejores parámetros para Simulated Annealing)
+    return beneficios_SA if SA else None
+
+def encontrar_parametros_SA(opt: int = 2, iteraciones_por_valor: int = 10, operadores_activos: dict = {operator: True for operator in params.operadores_modificables}) -> tuple:
+    resultados_SA = []
+    
+    for k in np.arange(0, 500, 1):
+        for lam in np.arange(0, 1, 0.0005):
+            def exp_schedule(t, k: float=k, lam: float=lam):
+                return k * exp(-lam * t)
+            
+            resultados_iteraciones = comparar_resultados_HC_SA(HC=False, SA=True, iterations=iteraciones_por_valor, opt=opt, schedule_sa=exp_schedule, beneficios_bool=False, tiempos_bool=False, distancias_bool=False)
+            promedio_iteraciones = sum(resultados_iteraciones)/iteraciones_por_valor
+            resultados_SA.append((promedio_iteraciones, k, lam))
+
+    # Nos quedamos con el mejor resultado
+    mejor_resultado = max(resultados_SA, key=lambda x: x[0])
+    best_k, best_lambda = mejor_resultado[1], mejor_resultado[2]
+
+    # Generar el gráfico 3D
+
+    # Desempaquetar los valores en listas separadas
+    beneficio_values, k_values, lambda_values = zip(*resultados_SA)
+
+    # Convertir las listas en arrays de NumPy para manipulación eficiente
+    k_values = np.array(k_values)
+    lambda_values = np.array(lambda_values)
+    beneficio_values = np.array(beneficio_values)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Utilizar los valores de 'k', 'lambda' y 'beneficio' para el gráfico de barras 3D
+    ax.bar3d(k_values, lambda_values, np.zeros_like(beneficio_values), 0.5, 0.5, beneficio_values, shade=True)
+
+    # Etiquetas para los ejes
+    ax.set_xlabel('K')
+    ax.set_ylabel('Lambda')
+    ax.set_zlabel('Beneficio (€)')
+
+    plt.savefig("parametros_SA.png")
+    plt.show()
+    plt.close()
+
+    return best_k, best_lambda
+
 
 ##############################################################################################################################
 
@@ -265,12 +309,12 @@ if __name__ == "__main__":
     #mejor_initial_state(iteraciones=100)
 
 # Experimento 3 ----------------------------------------------------------------------------------
-    #k, lam = encontrar_parametros_SA()
+    #k, lam = encontrar_parametros_SA(opt=2, iteraciones_por_valor=10)
 
     def exp_schedule(t, k: float=0, lam: float=0):
         return k * exp(-lam * t)
     
-    comparar_resultados_HC_SA(opt=2, HC=True, SA=True, iterations=1, schedule_sa=exp_schedule)
+    comparar_resultados_HC_SA(opt=2, HC=True, SA=True, iterations=50, schedule_sa=exp_schedule)
 
 # Experimento 4 ----------------------------------------------------------------------------------
     

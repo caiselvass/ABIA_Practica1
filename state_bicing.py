@@ -261,11 +261,11 @@ class EstadoBicing(object):
                         elif est['dif'] > 0 and est['disp'] > 0 and est['index'] not in estaciones_carga:
                             lista_est_excedente.append((est['dif'], est['index']))
                     
-                    lista_est_excedente.sort(reverse=True)
+                    best_origen = max(lista_est_excedente)[1]
                     lista_est_faltante.sort()
 
                     lista_actions_SA.append(ReasignarFurgonetaInformado(id_furgoneta=furgoneta.id, \
-                                                                id_est_origen=lista_est_excedente[0][1], \
+                                                                id_est_origen=best_origen, \
                                                                     id_est_dest1=lista_est_faltante[0][1], id_est_dest2=lista_est_faltante[1][1]))
                 
                 # ReducirNumeroBicicletasCarga ########################################################################
@@ -336,11 +336,11 @@ class EstadoBicing(object):
                         elif est['dif'] > 0 and est['disp'] > 0 and est['index'] not in estaciones_carga:
                             lista_est_excedente.append((est['dif'], est['index']))
                     
-                    lista_est_excedente.sort(reverse=True)
+                    best_origen = max(lista_est_excedente)[1]
                     lista_est_faltante.sort()
 
                     yield ReasignarFurgonetaInformado(id_furgoneta=furgoneta.id, \
-                                                                id_est_origen=lista_est_excedente[0][1], \
+                                                                id_est_origen=best_origen, \
                                                                     id_est_dest1=lista_est_faltante[0][1], id_est_dest2=lista_est_faltante[1][1])
                 
                 # ReducirNumeroBicicletasCarga ########################################################################
