@@ -151,7 +151,7 @@ def mejor_initial_state(initial_strategies: list = [0, 1, 2], iteraciones: int =
     plt.savefig('experimento2.png', format='png')  # Guardar gráfico como PNG
     plt.show()
 
-def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int = 10, opt: int = 2, schedule_sa = None, beneficios_bool: bool = True, tiempos_bool: bool = True, distancias_bool: bool = True) -> Union[None, list]:
+def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int = 10, opt: int = 2, schedule_sa = None, beneficios_bool: bool = True, tiempos_bool: bool = True, distancias_bool: bool = True, ocultar_progreso: bool = False) -> Union[None, list]:
     """
     Realiza los experimentos con Hill Climbing y Simulated Annealing y genera las gráficas de los resultados.
     Se pueden desactivar los experimentos que no se quieran realizar.
@@ -163,7 +163,8 @@ def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int 
     tiempos_SA, beneficios_SA, distancias_SA = [], [], []
 
     for i in range(iterations):
-        print(f"PROGRESO: {round((i/iterations)*100, 1)}%", end='\r')
+        if not ocultar_progreso:
+            print(f"PROGRESO: {round((i/iterations)*100, 1)}%", end='\r')
         
         # Generación del estado inicial
         initial_state = generate_initial_state(opt=opt)
@@ -231,16 +232,26 @@ def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int 
 
 def encontrar_parametros_SA(opt: int = 2, iteraciones_por_valor: int = 10, operadores_activos: dict = {operator: True for operator in params.operadores_modificables}) -> tuple:
     resultados_SA = []
-    
-    for k in np.arange(0, 500, 1):
-        for lam in np.arange(0, 1, 0.0005):
-            def exp_schedule(t, k: float=k, lam: float=lam):
-                return k * exp(-lam * t)
+
+    min_k, max_k, inc_k = 0, 50, 5
+    min_lam, max_lam, inc_lam = 0, 0.5, 0.0005
+    limit = 10
+
+    num_valores_comprobados = ((max_k-min_k)/inc_k) * ((max_lam-min_lam)/inc_lam)
+    num_valor = 0
+    for k in np.arange(min_k, max_k, inc_k):
+        for lam in np.arange(min_lam, max_lam, inc_lam):
+            def exp_schedule(k: float=k, lam: float=lam, limit: int=limit):
+                return lambda t: (k * exp(-lam * t)) if t < limit else 0
             
-            resultados_iteraciones = comparar_resultados_HC_SA(HC=False, SA=True, iterations=iteraciones_por_valor, opt=opt, schedule_sa=exp_schedule, beneficios_bool=False, tiempos_bool=False, distancias_bool=False)
+            num_valor += 1
+            print(f"PROGRESO: [{num_valor}/{num_valores_comprobados}]", end='\r')
+            resultados_iteraciones = comparar_resultados_HC_SA(HC=False, SA=True, iterations=iteraciones_por_valor, opt=opt, schedule_sa=exp_schedule(), beneficios_bool=False, tiempos_bool=False, distancias_bool=False, ocultar_progreso=True)
             promedio_iteraciones = sum(resultados_iteraciones)/iteraciones_por_valor
             resultados_SA.append((promedio_iteraciones, k, lam))
 
+    print("TODOS LOS VALORES COMPORBADOS, GENERANDO GRÁFICOS...")
+    
     # Nos quedamos con el mejor resultado
     mejor_resultado = max(resultados_SA, key=lambda x: x[0])
     best_k, best_lambda = mejor_resultado[1], mejor_resultado[2]
@@ -267,10 +278,9 @@ def encontrar_parametros_SA(opt: int = 2, iteraciones_por_valor: int = 10, opera
     ax.set_zlabel('Beneficio (€)')
 
     plt.savefig("parametros_SA.png")
-    plt.show()
     plt.close()
 
-    return best_k, best_lambda
+    return best_k, best_lambda, limit
 
 
 ##############################################################################################################################
@@ -309,12 +319,12 @@ if __name__ == "__main__":
     #mejor_initial_state(iteraciones=100)
 
 # Experimento 3 ----------------------------------------------------------------------------------
-    #k, lam = encontrar_parametros_SA(opt=2, iteraciones_por_valor=10)
+    k, lam, limit = encontrar_parametros_SA(opt=2, iteraciones_por_valor=1)
 
-    def exp_schedule(t, k: float=0, lam: float=0):
-        return k * exp(-lam * t)
+    def exp_schedule(k: float=k, lam: float=lam, limit: int=limit):
+        return lambda t: (k * exp(-lam * t)) if t < limit else 0
     
-    comparar_resultados_HC_SA(opt=2, HC=True, SA=True, iterations=50, schedule_sa=exp_schedule)
+    comparar_resultados_HC_SA(opt=2, HC=True, SA=True, iterations=50, schedule_sa=exp_schedule())
 
 # Experimento 4 ----------------------------------------------------------------------------------
     
