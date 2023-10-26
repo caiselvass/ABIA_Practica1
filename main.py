@@ -351,11 +351,14 @@ if __name__ == "__main__":
 # Experimento 1 ----------------------------------------------------------------------------------
     #comparar_all_operadores(opt=0, semilla=random.randint(0, 1_000_000), iteraciones=10)
 
+    operadores_exp1: dict = {}
 # Experimento 2 ----------------------------------------------------------------------------------
-    mejor_initial_state(iteraciones=50, semilla_rng=50)
+    mejor_initial_state(iteraciones=50, semilla_rng=50, operadores_activos=operadores_exp1)
+
+    opt_exp2: int = 
 
 # Experimento 3 ----------------------------------------------------------------------------------
-    k, lam, limit = encontrar_parametros_SA(opt=2, iteraciones_por_valor=1)
+    k, lam, limit = encontrar_parametros_SA(opt=opt_exp2, iteraciones_por_valor=1)
 
     def exp_schedule(k: float=k, lam: float=lam, limit: int=limit):
         return lambda t: (k * exp(-lam * t)) if t < limit else 0
