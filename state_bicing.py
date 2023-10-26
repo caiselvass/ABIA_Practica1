@@ -182,7 +182,7 @@ class EstadoBicing(object):
         balance_estaciones = self.__calcular_balance_estaciones()
         return balance_rutas + balance_estaciones
 
-    def heuristic(self, coste_transporte: bool) -> float:
+    def heuristic(self, coste_transporte: bool = params.coste_transporte) -> float:
         self.__restaurar_estaciones()
         for furgoneta in self.lista_furgonetas:
             self.__realizar_ruta(furgoneta.id)

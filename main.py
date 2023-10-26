@@ -36,7 +36,7 @@ def comparar_operadores_default(opt: int = 0, iteraciones: int = 10, semilla: Un
         tiempo_default += time.time() - inici1
         
         soluciones_expandidas_default += problema1.solutions_checked
-        beneficios_default.append(hill_climbing_1.heuristic(coste_transporte=params.coste_transporte))
+        beneficios_default.append(hill_climbing_1.heuristic())
         distancia_total_default = sum([hill_climbing_1.get_distancias_furgoneta(id_f)[2] for id_f in range(params.n_furgonetas)])
         distancias_default.append(distancia_total_default)
         
@@ -47,7 +47,7 @@ def comparar_operadores_default(opt: int = 0, iteraciones: int = 10, semilla: Un
         tiempo_modificado += time.time() - inici2
         
         soluciones_expandidas_modificado += problema2.solutions_checked
-        beneficios_modificado.append(hill_climbing_2.heuristic(coste_transporte=params.coste_transporte))
+        beneficios_modificado.append(hill_climbing_2.heuristic())
         distancia_total_modificado = sum([hill_climbing_2.get_distancias_furgoneta(id_f)[2] for id_f in range(params.n_furgonetas)])
         distancias_modificado.append(distancia_total_modificado)
 
@@ -91,7 +91,7 @@ def comparar_all_operadores(opt: int = 0, \
                         hill_climbing_1 = hill_climbing(problema)
                         tiempo += time.time() - inici
                         soluciones_expandidas += problema.solutions_checked
-                        beneficios_tmp.append(hill_climbing_1.heuristic(coste_transporte=params.coste_transporte))
+                        beneficios_tmp.append(hill_climbing_1.heuristic())
                     
                     media_beneficios.append((sum(beneficios_tmp)/iteraciones, tiempo/iteraciones, int(soluciones_expandidas/iteraciones), {k: v for k, v in operadores.items()}))
 
@@ -111,7 +111,7 @@ def comparar_all_operadores(opt: int = 0, \
             print(f"B: {exp[0]} | T: {exp[1]*1000} ms | Nº: {exp[2]} | OP: {values}\n")
 
     print(f"OPT: {opt} | ITERACIONES: {iteraciones} | HEURÍSTICO: {2 if params.coste_transporte else 1}\n")
-
+'''
 def mejor_initial_state(initial_strategies: list = [0, 1, 2], iteraciones: int = 10) -> None:
     """
     Compara los resultados de los tres métodos de generación de estados iniciales y escribe en pantalla los resultados indicando el mejor de ellos.
@@ -126,7 +126,7 @@ def mejor_initial_state(initial_strategies: list = [0, 1, 2], iteraciones: int =
             problema_bicing = ProblemaBicing(initial_state)
             final_solution_HC = hill_climbing(problema_bicing)
             
-            heuristic_value = final_solution_HC.heuristic(coste_transporte=params.coste_transporte)
+            heuristic_value = final_solution_HC.heuristic()
             
             results_accumulated[strategy] += heuristic_value
 
@@ -149,7 +149,43 @@ def mejor_initial_state(initial_strategies: list = [0, 1, 2], iteraciones: int =
     ax.set_ylabel('Coste Heurístico')
 
     plt.savefig('experimento2.png', format='png')  # Guardar gráfico como PNG
-    plt.show()
+    plt.show()'''
+
+def mejor_initial_state(iteraciones: int = 10, semilla_rng: int = random.randint(0, 1000), operadores_activos: dict = {}) -> None:
+    # Diccionario de resultados para cada estrategia (0, 1, y 2)
+    results_accumulated = {0: [], 1: [], 2: []}  
+
+    for _ in range(iteraciones):
+        # Realizamos 5 experimentos para las estrategias 0 y 1
+        for strategy in [0, 1]:
+            rng = random.Random(semilla_rng)
+
+            resultados_estrategias = []
+            for _ in range(5):
+                semilla_initial_state = rng.randint(0, 1000)
+                initial_state = generate_initial_state(opt=strategy, semilla=semilla_initial_state, operadores_activos=operadores_activos)
+                initial_state.heuristic()
+                problema_bicing = ProblemaBicing(initial_state)
+                final_solution_HC = hill_climbing(problema_bicing)
+                beneficio_obtenido = final_solution_HC.heuristic(coste_transporte=params.coste_transporte)
+                resultados_estrategias.append(beneficio_obtenido)
+            results_accumulated[strategy].append(np.mean(resultados_estrategias))  # Media de los 5 experimentos
+        
+        # Realizamos un experimento para la estrategia 2
+        initial_state = generate_initial_state(opt=2, operadores_activos=operadores_activos)
+        problema_bicing = ProblemaBicing(initial_state)
+        final_solution_HC = hill_climbing(problema_bicing)
+        beneficio_obtenido = final_solution_HC.heuristic(coste_transporte=params.coste_transporte)
+        results_accumulated[2].append(beneficio_obtenido)  
+
+    # Calculamos las medias
+    results_average = {strategy: np.mean(results) for strategy, results in results_accumulated.items()}
+
+    print(f"\nHEURÍSTICO {2 if params.coste_transporte else 1} | {iteraciones} ITERACIONES:")
+    for strategy, avg in results_average.items():
+        print(f"   * OPT: {strategy} --> BENEFICIO MEDIO: {avg} {'[BEST]' if avg == max(results_average.values()) else ''}")
+
+
 
 def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int = 10, opt: int = 2, schedule_sa = None, beneficios_bool: bool = True, tiempos_bool: bool = True, distancias_bool: bool = True, ocultar_progreso: bool = False) -> Union[None, list]:
     """
@@ -168,7 +204,7 @@ def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int 
         
         # Generación del estado inicial
         initial_state = generate_initial_state(opt=opt)
-        initial_state.heuristic(coste_transporte=params.coste_transporte)
+        initial_state.heuristic()
         problema_bicing = ProblemaBicing(initial_state)
 
         # Experimento con Hill Climbing
@@ -176,7 +212,7 @@ def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int 
             inicio_HC = time.time()
             resultado_HC = hill_climbing(problema_bicing)
             tiempos_HC.append((time.time() - inicio_HC)*1000)
-            beneficios_HC.append(resultado_HC.heuristic(coste_transporte=params.coste_transporte))
+            beneficios_HC.append(resultado_HC.heuristic())
             distancias_HC.append(sum([resultado_HC.get_distancias_furgoneta(id_f)[2] for id_f in range(params.n_furgonetas)]))
 
         # Experimento con Simulated Annealing
@@ -185,7 +221,7 @@ def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int 
             inicio_SA = time.time()
             resultado_SA = simulated_annealing(problema_bicing, schedule=schedule_sa)
             tiempos_SA.append((time.time() - inicio_SA)*1000)
-            beneficios_SA.append(resultado_SA.heuristic(coste_transporte=params.coste_transporte))
+            beneficios_SA.append(resultado_SA.heuristic())
             distancias_SA.append(sum([resultado_SA.get_distancias_furgoneta(id_f)[2] for id_f in range(params.n_furgonetas)]))
 
     # Generación de los box plots
@@ -233,11 +269,11 @@ def comparar_resultados_HC_SA(HC: bool = True, SA: bool = True, iterations: int 
 def encontrar_parametros_SA(opt: int = 2, iteraciones_por_valor: int = 10, operadores_activos: dict = {operator: True for operator in params.operadores_modificables}) -> tuple:
     resultados_SA = []
 
-    min_k, max_k, inc_k = 0, 50, 5
-    min_lam, max_lam, inc_lam = 0, 0.5, 0.0005
-    limit = 10
+    min_k, max_k, inc_k = 1, 50, 5
+    min_lam, max_lam, inc_lam = 0, 0.5, 0.01
+    limit = 100
 
-    num_valores_comprobados = ((max_k-min_k)/inc_k) * ((max_lam-min_lam)/inc_lam)
+    num_valores_comprobados = round(((max_k-min_k)/inc_k) * ((max_lam-min_lam)/inc_lam))
     num_valor = 0
     for k in np.arange(min_k, max_k, inc_k):
         for lam in np.arange(min_lam, max_lam, inc_lam):
@@ -257,26 +293,26 @@ def encontrar_parametros_SA(opt: int = 2, iteraciones_por_valor: int = 10, opera
     best_k, best_lambda = mejor_resultado[1], mejor_resultado[2]
 
     # Generar el gráfico 3D
-
-    # Desempaquetar los valores en listas separadas
-    beneficio_values, k_values, lambda_values = zip(*resultados_SA)
-
-    # Convertir las listas en arrays de NumPy para manipulación eficiente
-    k_values = np.array(k_values)
-    lambda_values = np.array(lambda_values)
-    beneficio_values = np.array(beneficio_values)
-
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
-    # Utilizar los valores de 'k', 'lambda' y 'beneficio' para el gráfico de barras 3D
-    ax.bar3d(k_values, lambda_values, np.zeros_like(beneficio_values), 0.5, 0.5, beneficio_values, shade=True)
+    # Extract k, lambda and results from resultados_SA
+    ks = [res[1] for res in resultados_SA]
+    lambdas = [res[2] for res in resultados_SA]
+    results = [res[0] for res in resultados_SA]
 
-    # Etiquetas para los ejes
+    # Assuming results are positive, you can set bottom to 0 for simplicity.
+    bottom = np.zeros_like(results)
+
+    # Define bar width and depth. You may need to adjust these depending on the granularity of your data.
+    width = depth = 5
+
+    ax.bar3d(ks, lambdas, bottom, width, depth, results)
+
     ax.set_xlabel('K')
-    ax.set_ylabel('Lambda')
+    ax.set_ylabel('λ')
     ax.set_zlabel('Beneficio (€)')
-
+    ax.set_title('Variación del beneficio para SA para varios valores de k y λ')
     plt.savefig("parametros_SA.png")
     plt.close()
 
@@ -290,7 +326,7 @@ if __name__ == "__main__":
 
 # Pruebas individuales
     """initial_state: EstadoBicing = generate_initial_state(opt=2)
-    initial_state.heuristic(coste_transporte=params.coste_transporte)
+    initial_state.heuristic()
     problema_bicing = ProblemaBicing(initial_state)
     tiempo_inicio = time.time()
     final_solution_HC = hill_climbing(problema_bicing)
@@ -316,7 +352,7 @@ if __name__ == "__main__":
     #comparar_all_operadores(opt=0, semilla=random.randint(0, 1_000_000), iteraciones=10)
 
 # Experimento 2 ----------------------------------------------------------------------------------
-    #mejor_initial_state(iteraciones=100)
+    mejor_initial_state(iteraciones=50, semilla_rng=50)
 
 # Experimento 3 ----------------------------------------------------------------------------------
     k, lam, limit = encontrar_parametros_SA(opt=2, iteraciones_por_valor=1)
