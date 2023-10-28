@@ -15,7 +15,7 @@ params = Parameters(n_estaciones=25, \
 					n_bicicletas=1250, \
 						n_furgonetas=5, \
 							seed=42, \
-								coste_transporte=True, \
+								coste_transporte=False, \
 									operadores_modificables={'CambiarOrdenDescarga', \
 								  'IntercambiarEstacionDescarga', \
 									'IntercambiarEstacionCarga', \

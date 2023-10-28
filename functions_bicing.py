@@ -22,7 +22,7 @@ def ejecucion_individual_HC(opt: int = 2, \
     tiempo_inicio = time.time()
     final_solution_HC = hill_climbing(problema_bicing)
     tiempo_final = time.time()
-    
+
     initial_state.print_state(inicial=True)
     initial_state.visualize_state(manhattan = True)
     final_solution_HC.print_state()
@@ -136,46 +136,6 @@ def comparar_all_operadores(opt: int = 0, \
     print(f"OPT: {opt} | ITERACIONES POR CONJUNTO DE OPERADORES: {iteraciones} | HEURÍSTICO: {2 if params.coste_transporte else 1}\n")
     print(f"SEMILLAS USADAS: {lista_semillas}\n")
 
-'''
-def mejor_initial_state(initial_strategies: list = [0, 1, 2], iteraciones: int = 10) -> None:
-    """
-    Compara los resultados de los tres métodos de generación de estados iniciales y escribe en pantalla los resultados indicando el mejor de ellos.
-    """
-    results_accumulated = {strategy: 0 for strategy in initial_strategies}
-
-    for i in range(iteraciones):
-        print(f"PROGRESO: {(i/iteraciones)*100}%")
-        for strategy in initial_strategies:
-            initial_state = generate_initial_state(opt=strategy)
-            
-            problema_bicing = ProblemaBicing(initial_state)
-            final_solution_HC = hill_climbing(problema_bicing)
-            
-            heuristic_value = final_solution_HC.heuristic()
-            
-            results_accumulated[strategy] += heuristic_value
-
-    results_average = {strategy: total/iteraciones for strategy, total in results_accumulated.items()}
-
-    print(f"\nHEURÍSTICO {2 if params.coste_transporte else 1} | {iteraciones} ITERACIONES:")
-    for strategy, avg in results_average.items():
-        print(f"   * OPT: {strategy} --> BENEFICIO MEDIO: {avg} {'[BEST]' if avg == max(results_average.values()) else ''}")
-    
-    # Creación del boxplot
-    strategies_names = [str(s) for s in initial_strategies]
-    data_to_plot = [results_accumulated[s] for s in initial_strategies]
-
-    fig, ax = plt.subplots()
-    ax.boxplot(data_to_plot)
-
-    ax.set_xticklabels(strategies_names)
-    ax.set_title('Comparación de Coste Heurístico por Estrategia de Solución Inicial')
-    ax.set_xlabel('Estrategias de Solución Inicial')
-    ax.set_ylabel('Coste Heurístico')
-
-    plt.savefig('experimento2.png', format='png')  # Guardar gráfico como PNG
-    plt.show()'''
-
 def mejor_initial_state(iteraciones: int = 15, \
                         iteraciones_estrategias_aleatorias: int = 5, \
                             semilla_rng: int = random.randint(0, 1000), \
@@ -243,11 +203,12 @@ def comparar_resultados_HC_SA(HC: bool = True, \
                               SA: bool = True, \
                                 iterations: int = 10, \
                                     opt: int = 2, \
-                                        schedule_sa = None, \
-                                            beneficios_bool: bool = True, \
-                                                tiempos_bool: bool = True, \
-                                                    distancias_bool: bool = True, \
-                                                        ocultar_progreso: bool = False) -> Union[None, list]:
+                                        operadores_activos: dict = {operator: True for operator in params.operadores_modificables}, \
+                                            schedule_sa = None, \
+                                                beneficios_bool: bool = True, \
+                                                    tiempos_bool: bool = True, \
+                                                        distancias_bool: bool = True, \
+                                                            mostrar_progreso: bool = True) -> Union[None, list]:
     """
     Realiza los experimentos con Hill Climbing y Simulated Annealing y genera las gráficas de los resultados.
     Se pueden desactivar los experimentos que no se quieran realizar.
@@ -259,11 +220,11 @@ def comparar_resultados_HC_SA(HC: bool = True, \
     tiempos_SA, beneficios_SA, distancias_SA = [], [], []
 
     for i in range(iterations):
-        if not ocultar_progreso:
+        if mostrar_progreso:
             print(f"PROGRESO: {round((i/iterations)*100, 1)}%", end='\r')
         
         # Generación del estado inicial
-        initial_state = generate_initial_state(opt=opt)
+        initial_state = generate_initial_state(opt=opt, operadores_activos=operadores_activos)
         initial_state.heuristic()
         problema_bicing = ProblemaBicing(initial_state)
 
@@ -334,12 +295,24 @@ def encontrar_parametros_SA(opt: int = 2, \
                                             operadores_activos: dict = {operator: True for operator in params.operadores_modificables}) -> tuple:
     
     resultados_SA = []
+    progreso = 0
     for k in valores_k:
         for lam in valores_lam:
+            progreso += 1
+            print(f"PROGRESO: {progreso}/{len(valores_k)*len(valores_lam)}", end='\r')
             def exp_schedule(k: float=k, lam: float=lam, limit: int=limit):
                 return lambda t: (k * exp(-lam * t)) if t < limit else 0
             
-            resultados_iteraciones = comparar_resultados_HC_SA(HC=False, SA=True, iterations=iteraciones_por_valor, opt=opt, schedule_sa=exp_schedule(), beneficios_bool=False, tiempos_bool=False, distancias_bool=False)
+            resultados_iteraciones = comparar_resultados_HC_SA(HC=False, \
+                                                               SA=True, \
+                                                                iterations=iteraciones_por_valor, \
+                                                                    opt=opt, \
+                                                                        operadores_activos=operadores_activos, \
+                                                                            schedule_sa=exp_schedule(), \
+                                                                                beneficios_bool=False, \
+                                                                                    tiempos_bool=False, \
+                                                                                        distancias_bool=False, \
+                                                                                            mostrar_progreso=False)
             promedio_iteraciones = sum(resultados_iteraciones)/iteraciones_por_valor
             resultados_SA.append((promedio_iteraciones, k, lam))
 
@@ -348,45 +321,65 @@ def encontrar_parametros_SA(opt: int = 2, \
     # Nos quedamos con el mejor resultado
     mejor_resultado = max(resultados_SA, key=lambda x: x[0])
     best_k, best_lambda = mejor_resultado[1], mejor_resultado[2]
+    print(f"Mejor resultado: {mejor_resultado}")
 
-    # Generar el gráfico 3D
+    # Valores únicos de k y lambda
+    k_values = sorted(set(k for _, k, _ in resultados_SA))
+    lam_values = sorted(set(lam for _, _, lam in resultados_SA))
+
+    # Inicializar matriz de ceros
+    matrix = np.zeros((len(k_values), len(lam_values)))
+
+    # Poblar la matriz con los datos
+    for beneficio, k, lam in resultados_SA:
+        i = k_values.index(k)
+        j = lam_values.index(lam)
+        matrix[i, j] = beneficio
+
+    # Verificar la matriz
+    for i, k in enumerate(k_values):
+        for j, lam in enumerate(lam_values):
+            print(f"Matriz en k={k}, lambda={lam}: {matrix[i, j]}")
+
+
+    # Crear la figura y los ejes
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
-    # Extract k, lambda and results from resultados_SA
-    ks = [res[1] for res in resultados_SA]
-    lambdas = [res[2] for res in resultados_SA]
-    results = [res[0] for res in resultados_SA]
+    # Generar coordenadas para cada barra
+    _x = np.arange(len(k_values))
+    _y = np.arange(len(lam_values))
+    _xx, _yy = np.meshgrid(_x, _y)
+    x, y = _xx.ravel(), _yy.ravel()
 
-    # Assuming results are positive, you can set bottom to 0 for simplicity.
-    bottom = np.zeros_like(results)
+    # Valores de z (beneficio)
+    z = matrix.T.ravel()
 
-    # Define bar width and depth. You may need to adjust these depending on the granularity of your data.
-    width = depth = 5
+    # Definir el ancho, la profundidad y la altura de cada barra
+    dx = dy = 0.45
 
-    ax.bar3d(ks, lambdas, bottom, width, depth, results)
+    # Mapa de colores
+    colors = ['r', 'g', 'b', 'y', 'c', 'm']
+    num_lam_values = len(lam_values)
+    colors = colors * (num_lam_values // len(colors) + 1)
 
+    # Obtener los índices en orden descendente basado en z
+    sorted_indices = np.argsort(z)[::-1]
+
+    # Crear el gráfico de barras con colores distintos para cada fila de lambda usando los índices ordenados
+    for idx in sorted_indices:
+        color_idx = int(_yy.ravel()[idx])
+        ax.bar3d(x[idx], y[idx], 0, dx, dy, z[idx], shade=True, color=colors[color_idx] if z[idx] != 95.0 else '0.5')
+
+    # Etiquetas para los ejes
+    ax.set_xticks(_x + dx/2)
+    ax.set_yticks(_y + dy/2)
+    ax.set_xticklabels(k_values)
+    ax.set_yticklabels(lam_values)
     ax.set_xlabel('K')
     ax.set_ylabel('λ')
     ax.set_zlabel('Beneficio (€)')
-    ax.set_title('Variación del beneficio para SA para varios valores de k y λ')
-    plt.savefig("parametros_SA.png")
+
+    plt.savefig('parametros_SA.png')
     plt.close()
-
-
-    plt.figure(figsize=(10, 6))
     
-    # Para cada combinación de k y λ, dibujamos la evolución del coste en función del número de pasos
-    for resultado in resultados_SA:
-        costes, k, lam = resultado
-        plt.plot(costes, label=f"k={k}, λ={lam}")
-
-    plt.title("Evolución del coste para diferentes valores de k y λ")
-    plt.xlabel("pasos")
-    plt.ylabel("coste")
-    plt.legend()
-    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
-    plt.tight_layout()
-    plt.savefig("evolucion_coste_SA.png")
-    plt.close()
-    return best_k, best_lambda, limit
