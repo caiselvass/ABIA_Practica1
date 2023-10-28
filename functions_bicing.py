@@ -315,8 +315,6 @@ def encontrar_parametros_SA(opt: int = 2, \
                                                                                             mostrar_progreso=False)
             promedio_iteraciones = sum(resultados_iteraciones)/iteraciones_por_valor
             resultados_SA.append((promedio_iteraciones, k, lam))
-
-    print("TODOS LOS VALORES COMPORBADOS, GENERANDO GRÁFICOS...")
     
     # Nos quedamos con el mejor resultado
     mejor_resultado = max(resultados_SA, key=lambda x: x[0])
@@ -339,7 +337,7 @@ def encontrar_parametros_SA(opt: int = 2, \
     # Verificar la matriz
     for i, k in enumerate(k_values):
         for j, lam in enumerate(lam_values):
-            print(f"Matriz en k={k}, lambda={lam}: {matrix[i, j]}")
+            print(f"k={k}, λ={lam} --> Beneficio: {matrix[i, j]}")
 
 
     # Crear la figura y los ejes
@@ -382,4 +380,9 @@ def encontrar_parametros_SA(opt: int = 2, \
 
     plt.savefig('parametros_SA.png')
     plt.close()
+
+    print("\nMEJORES RESULTADOS:")
+    for resultado in resultados_SA:
+        if resultado[0] == mejor_resultado[0]:
+            print(f"   * K={resultado[1]}, λ={resultado[2]} --> Beneficio: {resultado[0]}\n")
     
