@@ -1,6 +1,5 @@
 from furgoneta_bicing import Furgoneta
 from parameters_bicing import params
-from functions_bicing import distancia_manhattan
 from typing import Generator
 import pygame
 import random
@@ -70,12 +69,20 @@ class EstadoBicing(object):
         Return: (distancia_a_b, distancia_b_c, distancia_a_b + distancia_b_c)
         """
         furgoneta = self.lista_furgonetas[id_furgoneta]
-        distancia_a_b = distancia_manhattan(self.__get_coords_est(furgoneta.id_est_origen), self.__get_coords_est(furgoneta.id_est_dest1)) / 1000
-        distancia_b_c = distancia_manhattan(self.__get_coords_est(furgoneta.id_est_dest1), self.__get_coords_est(furgoneta.id_est_dest2)) / 1000
+        distancia_a_b = self.__distancia_manhattan(self.__get_coords_est(furgoneta.id_est_origen), self.__get_coords_est(furgoneta.id_est_dest1)) / 1000
+        distancia_b_c = self.__distancia_manhattan(self.__get_coords_est(furgoneta.id_est_dest1), self.__get_coords_est(furgoneta.id_est_dest2)) / 1000
         return (distancia_a_b, distancia_b_c, distancia_a_b + distancia_b_c)
     
-    def __get_coords_est(self, id_est) -> tuple:
+    @staticmethod
+    def __get_coords_est(id_est) -> tuple:
         return (params.estaciones[id_est].coordX, params.estaciones[id_est].coordY)
+    
+    @staticmethod
+    def __distancia_manhattan(coord1: tuple, coord2: tuple) -> int:
+        """
+        Calcula la distancia de Manhattan entre dos puntos.
+        """
+        return abs(coord1[0] - coord2[0]) + abs(coord1[1] - coord2[1])
     
     def __restaurar_estaciones(self) -> None:
         self.info_estaciones: list[dict] = [{'index': index, \
@@ -146,8 +153,8 @@ class EstadoBicing(object):
 
         assert carga == descarga1 + descarga2, "El número de bicicletas cargadas no coincide con el número de bicicletas descargadas"
 
-        distancia_a_b = distancia_manhattan(self.__get_coords_est(furgoneta.id_est_origen), self.__get_coords_est(furgoneta.id_est_dest1)) / 1000
-        distancia_b_c = distancia_manhattan(self.__get_coords_est(furgoneta.id_est_dest1), self.__get_coords_est(furgoneta.id_est_dest2)) / 1000
+        distancia_a_b = self.__distancia_manhattan(self.__get_coords_est(furgoneta.id_est_origen), self.__get_coords_est(furgoneta.id_est_dest1)) / 1000
+        distancia_b_c = self.__distancia_manhattan(self.__get_coords_est(furgoneta.id_est_dest1), self.__get_coords_est(furgoneta.id_est_dest2)) / 1000
 
         coste_a_b = ((carga + 9) // 10) * distancia_a_b
         coste_b_c = ((descarga2 + 9) // 10) * distancia_b_c
