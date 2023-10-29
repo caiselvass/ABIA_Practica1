@@ -1,4 +1,5 @@
-Para poder ejecutar los experimentos correctamente debemos abrir al archivo 'main.py'.
+Para poder ejecutar los experimentos correctamente debemos abrir al archivo 'main.py'. Es muy importante que se ejecute con el archivo
+'abia_bicing.py' (que no se incluye en la entrega porqué forma parte del enunciado) en la misma carpeta, para que se pueda tenera acceso a las clases 'Estacion' y 'Estaciones'.
 
 A partir de la linea 70 se encuentran las llamadas a las funciones que ejecutan los experimentos. Todas las llamadas tienen el siguiente formato: experimentoX(), donde X es el número del experimento.
 
