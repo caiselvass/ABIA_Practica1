@@ -50,19 +50,7 @@ def experimento5(operadores_resultado_exp1: dict, opt_resultado_exp2: int, k, la
                                             lam=lam, \
                                                 limit=limite, \
                                                     operadores_activos=operadores_resultado_exp1, \
-                                                        iteraciones_por_replica=iteraciones_por_replica, \
-                                                            coste_transporte=False)
-    
-    comparar_resultados_HC_SA(opt=opt_resultado_exp2, \
-                              HC=True, \
-                                SA=True, \
-                                    lista_semillas=lista_semillas, \
-                                        k=k, \
-                                            lam=lam, \
-                                                limit=limite, \
-                                                    operadores_activos=operadores_resultado_exp1, \
-                                                        iteraciones_por_replica=iteraciones_por_replica, \
-                                                            coste_transporte=True)
+                                                        iteraciones_por_replica=iteraciones_por_replica)
 
 def experimento6(operadores_resultado_exp1: dict, \
                  opt_resultado_exp2: int, \
@@ -102,7 +90,7 @@ if __name__ == "__main__":
     # ----- Experimento 3 -----
     valores_k: list = [1, 0.01]#[0.001, 0.01, 0.1, 1, 10, 100]
     valores_lam: list = [0.1, 0.01, 0.001]#[0.0001, 0.001, 0.01, 0.1, 0.99]
-    limite: int = 25_000
+    limite: int = 1000
 
     #experimento3(iteraciones_por_semilla=1, lista_semillas=lista_semillas, operadores_resultado_exp1=operadores_exp1, opt_resultado_exp2=opt_exp2, valores_k=valores_k, valores_lam=valores_lam, limite=limite)
 
@@ -114,7 +102,7 @@ if __name__ == "__main__":
     #experimento4(lista_semillas=lista_semillas, operadores_resultado_exp1=operadores_exp1, opt_resultado_exp2=opt_exp2, incremento_estaciones=25, incremento_furgonetas=5, incremento_bicicletas=1250, n_incrementos=8)
 
     # ----- Experimento 5 -----
-    experimento5(iteraciones_por_replica=10, lista_semillas=lista_semillas, k=k_exp3, lam=lam_exp3, limite=limite_exp3, operadores_resultado_exp1=operadores_exp1, opt_resultado_exp2=opt_exp2)
+    #experimento5(iteraciones_por_replica=10, lista_semillas=lista_semillas, k=k_exp3, lam=lam_exp3, limite=limite_exp3, operadores_resultado_exp1=operadores_exp1, opt_resultado_exp2=opt_exp2)
 
     # ----- Experimento 6 -----
     #experimento6(lista_semillas=lista_semillas, operadores_resultado_exp1=operadores_exp1, opt_resultado_exp2=opt_exp2, incremento_furgonetas=5, n_incrementos=9)

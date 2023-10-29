@@ -216,18 +216,12 @@ def comparar_resultados_HC_SA(HC: bool = True, \
                                                             tiempos_bool: bool = True, \
                                                                 distancias_bool: bool = True, \
                                                                     mostrar_progreso: bool = True, \
-                                                                        iteraciones_por_replica: int = 10, \
-                                                                            coste_transporte: bool = True) -> Union[None, list]:
+                                                                        iteraciones_por_replica: int = 10) -> Union[None, list]:
     """
     Realiza los experimentos con Hill Climbing y Simulated Annealing y genera las gráficas de los resultados.
     Se pueden desactivar los experimentos que no se quieran realizar.
     """
     assert HC or SA, "Al menos uno de los dos experimentos debe estar activo"
-
-    if coste_transporte:
-        params.coste_transporte=True
-    else:
-        params.coste_transporte=False
 
     tiempos_HC, beneficios_HC, distancias_HC = [], [], []
     tiempos_SA, beneficios_SA, distancias_SA = [], [], []
@@ -331,23 +325,23 @@ def encontrar_parametros_SA(opt: int = 2, \
             progreso += 1
             print(f"PROGRESO: {progreso}/{len(valores_k)*len(valores_lam)}", end='\r')
             
-            def exp_schedule(k: float=k, lam: float=lam, limit: int=limit):
-                return lambda t: (k * exp(-lam * t)) if t < limit else 0
-            
             promedio_semillas = 0
             for semilla in lista_semillas:
                 params.actualizar_semilla(semilla=semilla)
             
                 resultados_iteraciones = comparar_resultados_HC_SA(HC=False, \
-                                                                SA=True, \
-                                                                    iterations=iteraciones_por_semilla, \
-                                                                        opt=opt, \
-                                                                            operadores_activos=operadores_activos, \
-                                                                                schedule_sa=exp_schedule(), \
-                                                                                    beneficios_bool=False, \
-                                                                                        tiempos_bool=False, \
-                                                                                            distancias_bool=False, \
-                                                                                                mostrar_progreso=False)
+                                                                    SA=True, \
+                                                                        lista_semillas=[semilla], \
+                                                                            iteraciones_por_replica=iteraciones_por_semilla, \
+                                                                                opt=opt, \
+                                                                                    operadores_activos=operadores_activos, \
+                                                                                        k=k, \
+                                                                                            lam=lam, \
+                                                                                                limit=limit, \
+                                                                                                    beneficios_bool=False, \
+                                                                                                        tiempos_bool=False, \
+                                                                                                            distancias_bool=False, \
+                                                                                                                mostrar_progreso=False)
                 promedio_semillas += sum(resultados_iteraciones)/iteraciones_por_semilla
             resultados_SA.append((promedio_semillas/len(lista_semillas), k, lam))
 
