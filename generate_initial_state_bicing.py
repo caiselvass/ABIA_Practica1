@@ -57,7 +57,20 @@ def generate_initial_state(opt: int = 0, \
         
         n_estaciones_origen = len(lista_est_excedente)
         n_estaciones_destino = len(lista_est_faltante)
-                
+
+        # Para evitar que el código se rompa si no hay suficientes estaciones con diferencia positiva o negativa
+        while len(lista_est_excedente) < n_furgonetas:
+            nueva_estacion = rng.randint(0, n_estaciones - 1)
+            if nueva_estacion not in lista_est_excedente:
+                lista_est_excedente.append(nueva_estacion)
+                lista_est_faltante.pop(lista_est_faltante.index(nueva_estacion))
+        
+        while len(lista_est_faltante) < 1:
+            nueva_estacion = rng.randint(0, n_estaciones -1)
+            if nueva_estacion not in lista_est_excedente:
+                lista_est_faltante.append(nueva_estacion)
+
+        
         for furgoneta in lista_furgonetas:
             # Asignamos una estación de origen a la furgoneta
             id_est_o = rng.randint(0, n_estaciones_origen - 1)
@@ -85,8 +98,26 @@ def generate_initial_state(opt: int = 0, \
             elif est['dif'] > 0 and est['disp'] > 0:
                 lista_est_excedente.append((est['dif'], est['index']))
         
+        n_estaciones_origen = len(lista_est_excedente)
+        n_estaciones_destino = len(lista_est_faltante)
+                
         lista_est_excedente.sort(reverse=True)
         lista_est_faltante.sort()
+
+        # Para evitar que el código se rompa si no hay suficientes estaciones con diferencia positiva o negativa
+        while len(lista_est_excedente) < n_furgonetas:
+            nueva_estacion = rng.randint(0, n_estaciones - 1)
+            if nueva_estacion not in lista_est_excedente:
+                lista_est_excedente.append((None, nueva_estacion))
+                for i, est in enumerate(lista_est_faltante):
+                    if est[1] == nueva_estacion:
+                        lista_est_faltante.pop(i)
+                        break
+        
+        while len(lista_est_faltante) < 2*n_furgonetas:
+            nueva_estacion = rng.randint(0, n_estaciones -1)
+            if nueva_estacion not in lista_est_excedente and nueva_estacion not in lista_est_faltante:
+                lista_est_faltante.append((None, nueva_estacion))
         
         # Asignación tipo 1
         j = 0
@@ -95,16 +126,6 @@ def generate_initial_state(opt: int = 0, \
             furgoneta.id_est_dest1 = lista_est_faltante[j][1]
             furgoneta.id_est_dest2 = lista_est_faltante[j+1][1]
             j += 2
-
-        # Asignación tipo 2
-        """j = 0
-        for i, furgoneta in enumerate(lista_furgonetas):
-            furgoneta.id_est_origen = lista_est_excedente[i][1]
-    
-            furgoneta.id_est_dest1 = lista_est_faltante[j][1]
-            furgoneta.id_est_dest2 = lista_est_faltante[j+params.n_furgonetas][1]
-            j += 1"""
-
     
     state = EstadoBicing(lista_furgonetas=lista_furgonetas, operadores_activos=operadores_activos)
     return state

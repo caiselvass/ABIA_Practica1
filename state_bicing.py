@@ -337,18 +337,22 @@ class EstadoBicing(object):
                 if self.operadores_activos['ReasignarFurgonetaInformado']:
                     lista_est_excedente: list[tuple] = []
                     lista_est_faltante: list[tuple] = []
+                    lista_sobras: list[tuple] = []
                     for est in self.info_estaciones:
                         if est['dif'] < 0:
                             lista_est_faltante.append((est['dif'], est['index']))
                         elif est['dif'] > 0 and est['disp'] > 0 and est['index'] not in estaciones_carga:
                             lista_est_excedente.append((est['dif'], est['index']))
+                        else:
+                            lista_sobras.append((est['dif'], est['index']))
                     
-                    best_origen = max(lista_est_excedente)[1]
-                    lista_est_faltante.sort()
+                    if len(lista_est_excedente) > 0 and len(lista_est_faltante) > 1:
+                        best_origen = max(lista_est_excedente)[1]
+                        lista_est_faltante.sort()
 
-                    yield ReasignarFurgonetaInformado(id_furgoneta=furgoneta.id, \
-                                                                id_est_origen=best_origen, \
-                                                                    id_est_dest1=lista_est_faltante[0][1], id_est_dest2=lista_est_faltante[1][1])
+                        yield ReasignarFurgonetaInformado(id_furgoneta=furgoneta.id, \
+                                                                    id_est_origen=best_origen, \
+                                                                        id_est_dest1=lista_est_faltante[0][1], id_est_dest2=lista_est_faltante[1][1])
                 
                 # ReducirNumeroBicicletasCarga ########################################################################
                 if furgoneta.bicicletas_cargadas % 10 != 0:
