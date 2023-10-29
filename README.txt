@@ -9,5 +9,9 @@ El resto de líneas (con declaraciones de variables, etc) no se deben comentar, 
 Las variables declaradas en el archivo son para realizar las ejecuciones de los experimentos con los valores mostrados en el informe.
 En algunos experimentos hay múltiples valores mostrados en el informe, pero aqui solo se ejecutan con uno de ellos.
 
-El experimento 6 es el único que se tiene que ejecutar 2 veces, una para cada heurístico. Para cambiar el heurístico se debe abrir el
+El experimento 5 es el único que se tiene que ejecutar 2 veces, una para cada heurístico. Para cambiar el heurístico se debe abrir el
 archivo 'parameters_bicing.py' y en la declaración del objeto 'params' se debe cambiar el valor del parametro 'coste_transporte' a False (heurístico 1) o True (heurístico 2).
+
+Una vez realizadas las ejecuciones de los experimentos, se pueden realizar ejecuciones individuales del algoritmo Hill Climbing con una sola réplica
+para ver el visualizador de rutas implementado en Pygame y los __repr__()/__str__() del estado inicial y el estado final solucionado.
+Para cambiar el heurístico de cualquier ejecución se debe hacer en 'parameters_bicing.py' como se ha explicado anteriormente.

@@ -32,7 +32,7 @@ def ejecucion_individual_HC(opt: int = 2, \
     final_solution_HC.print_state()
     print(f"SOLUCIONES COMPROBADAS: {problema_bicing.solutions_checked}")
     print(f"TIEMPO DE EJECUCIÓN: {1000*(tiempo_final - tiempo_inicio)} ms\n")
-    if visualizador_grafico
+    if visualizador_grafico:
         final_solution_HC.visualize_state(manhattan = True)
 
 def comparar_all_operadores(opt: int = 0, \

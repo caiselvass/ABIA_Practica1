@@ -1,4 +1,4 @@
-from functions_bicing import comparar_all_operadores, mejor_initial_state, encontrar_parametros_SA ,comparar_resultados_HC_SA, tiempos_experimento_con_aumento, augmento_furgonetas
+from functions_bicing import comparar_all_operadores, mejor_initial_state, encontrar_parametros_SA ,comparar_resultados_HC_SA, tiempos_experimento_con_aumento, augmento_furgonetas, ejecucion_individual_HC
 import random
 
 # Función de ejecución de experimentos
@@ -88,8 +88,8 @@ if __name__ == "__main__":
     opt_exp2: int = 2
 
     # ----- Experimento 3 -----
-    valores_k: list = [1, 0.01]#[0.001, 0.01, 0.1, 1, 10, 100]
-    valores_lam: list = [0.1, 0.01, 0.001]#[0.0001, 0.001, 0.01, 0.1, 0.99]
+    valores_k: list = [0.001, 0.01, 0.1, 1, 10, 100]
+    valores_lam: list = [0.0001, 0.001, 0.01, 0.1, 0.99]
     limite: int = 1000
 
     #experimento3(iteraciones_por_semilla=1, lista_semillas=lista_semillas, operadores_resultado_exp1=operadores_exp1, opt_resultado_exp2=opt_exp2, valores_k=valores_k, valores_lam=valores_lam, limite=limite)
@@ -107,3 +107,5 @@ if __name__ == "__main__":
     # ----- Experimento 6 -----
     #experimento6(lista_semillas=lista_semillas, operadores_resultado_exp1=operadores_exp1, opt_resultado_exp2=opt_exp2, incremento_furgonetas=5, n_incrementos=9)
 
+    # Ejecuciones individuales de Hill Climbing con todos los operadores activos, para ver visualizador y __repr__/__str__ de los estados.
+    #ejecucion_individual_HC(opt=2, semilla=42, visualizador_grafico=True)
