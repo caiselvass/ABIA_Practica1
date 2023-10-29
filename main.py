@@ -68,7 +68,7 @@ def experimento6(operadores_resultado_exp1: dict, \
 
 # Programa principal
 if __name__ == "__main__":
-    # Creación de la lista de semillas
+    # Creación de la lista de semillas utilizada en la mayoría de experimentos para replicar los resultados.
     rng = random.Random(1234)
     n_semillas: int = 10
     lista_semillas: list = [42] + [rng.randint(0, 1000) for _ in range(n_semillas - 1)]
@@ -106,3 +106,4 @@ if __name__ == "__main__":
 
     # ----- Experimento 6 -----
     #experimento6(lista_semillas=lista_semillas, operadores_resultado_exp1=operadores_exp1, opt_resultado_exp2=opt_exp2, incremento_furgonetas=5, n_incrementos=9)
+

@@ -15,7 +15,8 @@ import matplotlib.pyplot as plt
 
 def ejecucion_individual_HC(opt: int = 2, \
                             semilla: int = 42, \
-                                operadores_activos: dict = {operator: True for operator in params.operadores_modificables}) -> None:
+                                operadores_activos: dict = {operator: True for operator in params.operadores_modificables}, \
+                                    visualizador_grafico: bool = True) -> None:
     params.actualizar_semilla(semilla=semilla)
     
     initial_state: EstadoBicing = generate_initial_state(opt=opt, operadores_activos=operadores_activos)
@@ -26,55 +27,13 @@ def ejecucion_individual_HC(opt: int = 2, \
     tiempo_final = time.time()
 
     initial_state.print_state(inicial=True)
-    initial_state.visualize_state(manhattan = True)
+    if visualizador_grafico:
+        initial_state.visualize_state(manhattan = True)
     final_solution_HC.print_state()
     print(f"SOLUCIONES COMPROBADAS: {problema_bicing.solutions_checked}")
     print(f"TIEMPO DE EJECUCIÓN: {1000*(tiempo_final - tiempo_inicio)} ms\n")
-    final_solution_HC.visualize_state(manhattan = True)
-
-def comparar_operadores_default(opt: int = 0, \
-                                iteraciones: int = 15, \
-                                    semilla: Union[int, None] = None, \
-                                        operadores_activos: dict = {operator: True for operator in params.operadores_modificables}) -> None:
-    """
-    Comparación de los resultados de Hill Climbing con los operadores por defecto y con los operadores modificados introducidos en el parámetro operadores_activos.
-    """
-    tiempo_default, tiempo_modificado, soluciones_expandidas_default, soluciones_expandidas_modificado = 0, 0, 0, 0
-    beneficios_default, beneficios_modificado = [], []
-    distancias_default, distancias_modificado = [], []
-    rng = random.Random(semilla)
-
-    for i in range(iteraciones):
-        print(f"PROGRESO: {round((i/iteraciones)*100, 1)}%", end='\r')
-        seed = rng.randint(0, 1_000_000)
-        state1 = generate_initial_state(opt=opt, semilla_rng=seed)
-        state2 = generate_initial_state(opt=opt, semilla_rng=seed, operadores_activos=operadores_activos)
-        
-        # Hill Climbing con operadores por defecto
-        problema1 = ProblemaBicing(initial_state=state1)
-        inici1 = time.time()
-        hill_climbing_1 = hill_climbing(problema1)
-        tiempo_default += time.time() - inici1
-        
-        soluciones_expandidas_default += problema1.solutions_checked
-        beneficios_default.append(hill_climbing_1.heuristic())
-        distancia_total_default = sum([hill_climbing_1.get_distancias_furgoneta(id_f)[2] for id_f in range(params.n_furgonetas)])
-        distancias_default.append(distancia_total_default)
-        
-        # Hill Climbing con operadores modificados
-        problema2 = ProblemaBicing(initial_state=state2)
-        inici2 = time.time()
-        hill_climbing_2 = hill_climbing(problema2)
-        tiempo_modificado += time.time() - inici2
-        
-        soluciones_expandidas_modificado += problema2.solutions_checked
-        beneficios_modificado.append(hill_climbing_2.heuristic())
-        distancia_total_modificado = sum([hill_climbing_2.get_distancias_furgoneta(id_f)[2] for id_f in range(params.n_furgonetas)])
-        distancias_modificado.append(distancia_total_modificado)
-
-    print(f"\nHEURISTIC: {2 if params.coste_transporte else 1} | OPT: {opt} | ITERACIONES: {iteraciones}\n")
-    print(f"MEDIA DEFECTO: {sum(beneficios_default)/iteraciones} | TIEMPO DEFAULT: {(tiempo_default/iteraciones)*1000} ms | Nº = {int(soluciones_expandidas_default/iteraciones)} | DISTANCIA DEFAULT: {sum(distancias_default)/iteraciones} | VARIANZA BENEF. DEFAULT: {sum([(beneficio - (sum(beneficios_default)/iteraciones))**2 for beneficio in beneficios_default])/iteraciones}")
-    print(f"MEDIA MODIFICADO: {sum(beneficios_modificado)/iteraciones} | TIEMPO MODIFICADO: {(tiempo_modificado/iteraciones)*1000} ms) | Nº = {int(soluciones_expandidas_modificado/iteraciones)} | DISTANCIA MODIFICADO: {sum(distancias_modificado)/iteraciones} | VARIANZA BENEF.MODIFICADO: {sum([(beneficio - (sum(beneficios_modificado)/iteraciones))**2 for beneficio in beneficios_modificado])/iteraciones}\n")
+    if visualizador_grafico
+        final_solution_HC.visualize_state(manhattan = True)
 
 def comparar_all_operadores(opt: int = 0, \
                             iteraciones_por_semilla: int = 15, \
